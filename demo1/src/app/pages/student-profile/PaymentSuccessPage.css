@@ -1,0 +1,49 @@
+.payment-success-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: linear-gradient(135deg, #4CAF50, #2E7D32);
+    color: white;
+    text-align: center;
+    font-family: "Poppins", sans-serif;
+  }
+  
+  .success-content {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+    max-width: 400px;
+  }
+  
+  .success-icon {
+    color: #fff;
+    animation: pop 0.6s ease-out;
+  }
+  
+  .success-title {
+    font-size: 2rem;
+    margin: 10px 0;
+  }
+  
+  .success-message {
+    font-size: 1.2rem;
+  }
+  
+  .redirect-message {
+    margin-top: 15px;
+    font-size: 1rem;
+    opacity: 0.8;
+  }
+  
+  .countdown {
+    font-weight: bold;
+  }
+  
+  @keyframes pop {
+    0% { transform: scale(0); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  

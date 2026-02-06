@@ -1,0 +1,359 @@
+/* Batch Management Container */
+.batch-management-container {
+  padding: 0;
+}
+
+.batch-management-container .card {
+  border-radius: 0.475rem;
+  box-shadow: 0px 0px 20px 0px rgba(77, 93, 123, 0.13);
+}
+
+.batch-management-container .card-header {
+  background-color: #f5f7f9;
+  border-bottom: 1px solid #e9ecef;
+  padding: 1.5rem;
+}
+
+.batch-management-container .card-title {
+  font-weight: 600;
+  color: #2d3748;
+  margin: 0;
+}
+
+/* Batch List Styles */
+.batch-management-container .table {
+  margin-bottom: 0;
+}
+
+.batch-management-container .table thead th {
+  background-color: #f5f7f9;
+  color: #2d3748;
+  font-weight: 600;
+  border-bottom: 2px solid #e9ecef;
+  padding: 1rem;
+  vertical-align: middle;
+}
+
+.batch-management-container .table tbody td {
+  padding: 1rem;
+  vertical-align: middle;
+  border-color: #e9ecef;
+}
+
+.batch-management-container .table tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+/* Buttons */
+.batch-management-container .btn-group .btn {
+  padding: 0.375rem 0.75rem;
+  margin: 0 2px;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+}
+
+.batch-management-container .btn-group .btn-sm {
+  padding: 0.25rem 0.5rem;
+}
+
+.batch-management-container .btn-primary {
+  background-color: #3b7dea;
+  border-color: #3b7dea;
+}
+
+.batch-management-container .btn-primary:hover {
+  background-color: #2d5fb5;
+  border-color: #2d5fb5;
+}
+
+.batch-management-container .btn-success {
+  background-color: #1bc47d;
+  border-color: #1bc47d;
+}
+
+.batch-management-container .btn-warning {
+  background-color: #ffa500;
+  border-color: #ffa500;
+}
+
+.batch-management-container .btn-danger {
+  background-color: #f4516c;
+  border-color: #f4516c;
+}
+
+.batch-management-container .btn-info {
+  background-color: #00bcd4;
+  border-color: #00bcd4;
+}
+
+/* Badge Styles */
+.batch-management-container .badge {
+  padding: 0.375rem 0.75rem;
+  font-weight: 500;
+  border-radius: 0.25rem;
+}
+
+.batch-management-container .badge.bg-success {
+  background-color: #1bc47d !important;
+}
+
+.batch-management-container .badge.bg-warning {
+  background-color: #ffa500 !important;
+  color: #fff;
+}
+
+.batch-management-container .badge.bg-info {
+  background-color: #00bcd4 !important;
+}
+
+/* Form Styles */
+.batch-management-container .form-control,
+.batch-management-container .form-select {
+  border: 1px solid #e9ecef;
+  border-radius: 0.375rem;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+}
+
+.batch-management-container .form-control:focus,
+.batch-management-container .form-select:focus {
+  border-color: #3b7dea;
+  box-shadow: 0 0 0 0.2rem rgba(59, 125, 234, 0.25);
+}
+
+.batch-management-container .form-control.is-invalid,
+.batch-management-container .form-select.is-invalid {
+  border-color: #f4516c;
+}
+
+.batch-management-container .invalid-feedback {
+  color: #f4516c;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+/* Progress Bar */
+.batch-management-container .progress {
+  background-color: #e9ecef;
+  border-radius: 0.25rem;
+  height: 0.75rem;
+}
+
+.batch-management-container .progress-bar {
+  background-color: #3b7dea;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.batch-management-container .progress-bar.bg-success {
+  background-color: #1bc47d !important;
+}
+
+.batch-management-container .progress-bar.bg-primary {
+  background-color: #3b7dea !important;
+}
+
+/* Tab Navigation */
+.batch-management-container .nav-tabs {
+  border-bottom: 2px solid #e9ecef;
+  margin-bottom: 1.5rem;
+}
+
+.batch-management-container .nav-tabs .nav-link {
+  color: #7e8ba3;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.batch-management-container .nav-tabs .nav-link:hover {
+  color: #3b7dea;
+}
+
+.batch-management-container .nav-tabs .nav-link.active {
+  color: #3b7dea;
+  background-color: transparent;
+  border-bottom-color: #3b7dea;
+}
+
+.batch-management-container .nav-tabs .nav-link:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Batch Details */
+.batch-details-container h3 {
+  color: #2d3748;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
+
+.batch-details-container .card {
+  margin-bottom: 1.5rem;
+  border: 1px solid #e9ecef;
+}
+
+.batch-details-container .card-header {
+  background-color: #f5f7f9;
+  border-bottom: 1px solid #e9ecef;
+  padding: 1rem 1.5rem;
+}
+
+.batch-details-container .card-header h5 {
+  margin: 0;
+  color: #2d3748;
+  font-weight: 600;
+}
+
+.batch-details-container .card-body {
+  padding: 1.5rem;
+}
+
+.batch-details-container .form-label {
+  color: #2d3748;
+  margin-bottom: 0.5rem;
+}
+
+.batch-details-container .form-control-plaintext {
+  color: #495057;
+  padding-top: 0;
+  padding-bottom: 0;
+  border-bottom: 1px solid #e9ecef;
+  padding-bottom: 0.5rem;
+}
+
+/* Student Progress */
+.student-progress-container .progress {
+  height: 25px;
+}
+
+.student-progress-container .progress-bar {
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Alerts */
+.batch-management-container .alert {
+  border-radius: 0.375rem;
+  border: none;
+  padding: 1rem 1.25rem;
+}
+
+.batch-management-container .alert-info {
+  background-color: #e7f3ff;
+  color: #004085;
+}
+
+.batch-management-container .alert-danger {
+  background-color: #ffe0e6;
+  color: #b71c1c;
+}
+
+.batch-management-container .alert-warning {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.batch-management-container .alert-success {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .batch-management-container .table {
+    font-size: 0.875rem;
+  }
+
+  .batch-management-container .btn-group .btn {
+    padding: 0.25rem 0.5rem;
+    margin: 2px 1px;
+  }
+
+  .batch-details-container .row {
+    flex-direction: column;
+  }
+
+  .batch-details-container .col-md-6 {
+    margin-bottom: 1rem;
+  }
+}
+
+/* Loading Spinner */
+.batch-management-container .spinner-border {
+  width: 2rem;
+  height: 2rem;
+  color: #3b7dea;
+}
+
+/* Modal Adjustments */
+.batch-management-container .modal-content {
+  border: 1px solid #e9ecef;
+  border-radius: 0.475rem;
+  box-shadow: 0px 0px 20px 0px rgba(77, 93, 123, 0.13);
+}
+
+.batch-management-container .modal-header {
+  background-color: #f5f7f9;
+  border-bottom: 1px solid #e9ecef;
+  padding: 1.5rem;
+}
+
+.batch-management-container .modal-title {
+  color: #2d3748;
+  font-weight: 600;
+}
+
+
+.attendance-letter{
+  width: 20px;
+  height: 20px;
+  border: none;
+  outline: none;
+  background-color: transparent;
+  font-weight: bold;
+  font-size: 18px;
+  padding: 0%;
+  margin: 0%;
+}
+
+/* Sticky column base */
+.sticky-col {
+  position: sticky;
+  background: white;
+  z-index: 2;
+}
+
+/* First column */
+.sticky-col-1 {
+  left: 0;
+  min-width: 50px;
+  max-width: 50px;
+  background: white;
+}
+
+/* Second column */
+.sticky-col-2 {
+  left: 50px; /* must match col-1 width */
+  min-width: 120px;
+  max-width: 120px;
+  background: white;
+  z-index: 3; /* higher than col-1 */
+}
+
+/* Header sticky fix */
+.table thead th.sticky-col {
+  z-index: 4;
+  background: white;
+}
+

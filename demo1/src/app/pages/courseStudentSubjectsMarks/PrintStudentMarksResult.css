@@ -1,0 +1,93 @@
+.bground {
+  color: #833533;
+  width: 820px;
+  height: max-content;
+  margin: 5rem auto;
+  border-radius: 5px;
+  padding: 20px;
+  position: relative;
+}
+
+.letterHeadImage {
+  position: absolute;
+  height: 100%;
+  top: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  color: #833533;
+  width: 820px;
+  z-index: -999;
+  /* background-color: rgb(180, 207, 181); */
+}
+
+.logo td {
+  font-size: 12px;
+}
+
+.logo td small {
+  font-size: 17px;
+}
+
+.marks {
+  border: 1px solid #833533;
+}
+
+.marks th {
+  border: 1px solid #833533;
+  font-size: 14px;
+  height: 45px;
+  text-align: center;
+}
+
+.marks td {
+  font-size: 14px;
+  height: 45px;
+  font-weight: bold;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.foot {
+  font-size: 13px;
+  line-height: 15px;
+  border-top: 2px solid #833533;
+  padding-top: 5px;
+}
+
+.line {
+  line-height: 15px;
+  text-align: center;
+}
+
+.stu-details {
+  margin: 10px 0px;
+  height: 100%;
+}
+
+.stu-details td {
+  height: 30px;
+  font-size: 15px;
+  font-weight: bold;
+}
+
+.stu-details td.last-line {
+  padding: 10px 0px 0px 0px;
+  text-transform: none;
+  font-size: 15px;
+}
+
+.pic {
+  padding: 0px 0px 10px 0px;
+}
+
+.logo {
+  max-width: 500px;
+}
+
+.divison {
+  text-transform: uppercase;
+}
