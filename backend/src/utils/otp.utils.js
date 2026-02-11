@@ -7,6 +7,8 @@ export const generateOTP = () => {
   return otp;
 };
 
+
+
 /**
  * Get OTP expiration time (5 minutes from now)
  */
