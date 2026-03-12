@@ -4,7 +4,8 @@ const attendenceSchema = new mongoose.Schema({
       batch: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Batch',
-      required: true
+      default: null,
+      //required: true
     },
     month: {
       type: Number, // 0-11

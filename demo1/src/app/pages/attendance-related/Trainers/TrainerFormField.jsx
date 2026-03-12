@@ -23,6 +23,7 @@ const TrainerFormField = ({setOpenModal}) => {
   const validationSchema = Yup.object().shape({
     trainerName: Yup.string().required('Trainer name is required'),
     trainerEmail: Yup.string().email('Invalid email').required('Trainer email is required'),
+    trainerRole: Yup.string(),
     trainerDesignation: Yup.string().required('Trainer designation is required'),
   })
 
@@ -31,6 +32,7 @@ const TrainerFormField = ({setOpenModal}) => {
     initialValues: {
       trainerName: '',
       trainerEmail: '',
+      trainerRole: 'Trainer',
       trainerDesignation: '',
     },
     validationSchema,
@@ -38,6 +40,7 @@ const TrainerFormField = ({setOpenModal}) => {
       const data = new FormData()
       data.append('trainerName', values.trainerName)
       data.append('trainerEmail', values.trainerEmail)
+      data.append('trainerRole', values.trainerRole)
       data.append('trainerDesignation', values.trainerDesignation)
       data.append('companyId', companyId)
       if (imageFile) {
@@ -120,6 +123,23 @@ const TrainerFormField = ({setOpenModal}) => {
         />
         {formik.touched.trainerEmail && formik.errors.trainerEmail && (
           <div className='text-danger'>{formik.errors.trainerEmail}</div>
+        )}
+      </div>
+      {/* trainerRole  */}
+      <div className='mb-3'>
+        <label className='col-lg-4 col-form-label required fw-bold fs-6'>Trainer Role</label>
+        <input
+          type='text'
+          name='trainerRole'
+          value={'Trainer'}
+          // onChange={formik.handleChange}
+          readOnly
+          onBlur={formik.handleBlur}
+          className='form-control form-control-lg form-control-solid'
+          placeholder='Trainer Role'
+        />
+        {formik.touched.trainerRole && formik.errors.trainerRole && (
+          <div className='text-danger'>{formik.errors.trainerRole}</div>
         )}
       </div>
 

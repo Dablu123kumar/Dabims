@@ -169,6 +169,8 @@ export const AdmissionContextProvider = ({ children }) => {
     onSuccess: async (res,variables) =>{
             console.log('res', res)
             const updatedStudent = res
+            console.log(updatedStudent)
+            
               // ✅ Detect course change
     const courseChanged =
       updatedStudent?.message?.toLowerCase().includes("course") ||

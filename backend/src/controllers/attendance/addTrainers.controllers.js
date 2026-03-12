@@ -6,10 +6,10 @@ const __dirname = path.resolve();
 
 export const addTrainerDataController = async (req, res, next) => {
   try {
-    const { trainerName, trainerDesignation, trainerEmail, companyId } =
+    const { trainerName, trainerDesignation, trainerEmail,trainerRole, companyId } =
       req.body;
 
-    if (!trainerName || !trainerDesignation || !trainerEmail) {
+    if (!trainerName || !trainerDesignation || !trainerEmail || !trainerRole || !companyId) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
@@ -36,6 +36,7 @@ export const addTrainerDataController = async (req, res, next) => {
       trainerName,
       trainerDesignation,
       trainerEmail,
+      trainerRole,
       companyId,
     });
     // console.log(newTrainer);

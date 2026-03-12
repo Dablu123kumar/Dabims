@@ -48,18 +48,18 @@ export function ForgotPassword() {
 
   return (
     <form
-      className='form w-100 fv-plugins-bootstrap5 fv-plugins-framework'
+      className='form w-100 fv-plugins-bootstrap5 fv-plugins-framework bg-dark opacity-75 p-10 rounded'
       noValidate
       id='kt_login_password_reset_form'
       onSubmit={formik.handleSubmit}
     >
       <div className='text-center mb-10'>
         {/* begin::Title */}
-        <h1 className='text-dark fw-bolder mb-3'>Forgot Password ?</h1>
+        <h1 className='text-white fw-bolder mb-3'>Forgot Password ?</h1>
         {/* end::Title */}
 
         {/* begin::Link */}
-        <div className='text-gray-500 fw-semibold fs-6'>
+        <div className='text-gray-200 fw-semibold fs-6'>
           Enter your email to reset your password.
         </div>
         {/* end::Link */}
@@ -83,14 +83,14 @@ export function ForgotPassword() {
 
       {/* begin::Form group */}
       <div className='fv-row mb-8'>
-        <label className='form-label fw-bolder text-gray-900 fs-6'>Email</label>
+        <label className='form-label fw-bolder text-gray-100 fs-6'>Email</label>
         <input
           type='email'
           placeholder=''
           autoComplete='off'
           {...formik.getFieldProps('email')}
           className={clsx(
-            'form-control bg-transparent',
+            'form-control bg-transparent text-gray-500 ',
             {'is-invalid': formik.touched.email && formik.errors.email},
             {
               'is-valid': formik.touched.email && !formik.errors.email,

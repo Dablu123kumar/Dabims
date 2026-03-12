@@ -13,31 +13,31 @@ export const addEmailTemplateController = asyncHandler(
         courseChangeTemplate
       } = req.body;
 
-      if (!customTemplate) {
-        return res.status(400).json({
-          error: "All fields are required",
-        });
-      }
-      if (!cancellationTemplate) {
-        return res.status(400).json({
-          error: "All fields are required",
-        });
-      }
-      if (!dynamicTemplate) {
-        return res.status(400).json({
-          error: "All fields are required",
-        });
-      }
-      if (!courseSubjectTemplate) {
-        return res.status(400).json({
-          error: "All fields are required",
-        });
-      }
-      if (!courseChangeTemplate) {
-        return res.status(400).json({
-          error: "All fields are required",
-        });
-      }
+      // if (!customTemplate) {
+      //   return res.status(400).json({
+      //     error: "All fields are required",
+      //   });
+      // }
+      // if (!cancellationTemplate) {
+      //   return res.status(400).json({
+      //     error: "All fields are required",
+      //   });
+      // }
+      // if (!dynamicTemplate) {
+      //   return res.status(400).json({
+      //     error: "All fields are required",
+      //   });
+      // }
+      // if (!courseSubjectTemplate) {
+      //   return res.status(400).json({
+      //     error: "All fields are required",
+      //   });
+      // }
+      // if (!courseChangeTemplate) {
+      //   return res.status(400).json({
+      //     error: "All fields are required",
+      //   });
+      // }
 
       const emailsTemplates = await EmailTemplateModel.find({});
       emailsTemplates.forEach(

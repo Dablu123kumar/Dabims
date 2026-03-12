@@ -364,6 +364,17 @@ export const AttendanceContextProvider = ({children}) => {
     )
   }
 
+
+  const useGetAllAttendance = ()=>{
+    return useQuery(
+      ['getAttendance'],
+      async ()=>{
+        const res = await axios.get(`${BASE_URL}/api/attendence`,config)
+        return res.data
+      }
+    )
+  }
+
   return (
     <attendanceContext.Provider
       value={{
@@ -389,7 +400,8 @@ export const AttendanceContextProvider = ({children}) => {
         // attendence
         saveAttendenceMutation,
         useGateAttendenceByBatch,
-        useGateAttendanceByStudentId
+        useGateAttendanceByStudentId,
+        useGetAllAttendance
       }}
     >
       {children}

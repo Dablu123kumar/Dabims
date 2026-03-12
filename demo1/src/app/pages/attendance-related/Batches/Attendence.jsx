@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react'
 import { useAttendanceContext } from '../AttendanceContext'
 import { useBatchContext } from '../../batch/BatchContext'
+import { useAdmissionContext } from '../../../modules/auth/core/Addmission'
 
 const AttendanceRegister = ({ batches, onBack }) => {
-  const { saveAttendenceMutation, useGateAttendenceByBatch } =
+  const { saveAttendenceMutation, useGateAttendenceByBatch,useGetAllAttendance } =
     useAttendanceContext()
   const { useGetBatchById } = useBatchContext()
+    const ctx = useAdmissionContext()
+    console.log(ctx.studentsLists?.data?.users)
 
   const today = new Date()
 
@@ -39,6 +42,17 @@ const AttendanceRegister = ({ batches, onBack }) => {
   const batch = batchData?.data
 
   /* -------------------------------
+     GET ALL  ATTENDANCE
+  -------------------------------- */
+  const { data: allAttendanceData } = useGetAllAttendance()
+  console.log('allattendence', allAttendanceData?.attendances)
+
+  // build a flat list of all students from allAttendanceData (used when no batch selected)
+  const allStudents =
+    allAttendanceData?.attendances?.flatMap((a) =>
+      (a.students || []).map((s) => ({ student: s.student }))
+    ) || []
+  /* -------------------------------
      GET ATTENDANCE
   -------------------------------- */
   const { data: attendanceData } = useGateAttendenceByBatch(
@@ -69,6 +83,29 @@ const AttendanceRegister = ({ batches, onBack }) => {
 
     setRegister(temp)
   }, [attendanceData])
+
+  // When no batch is selected, load the saved attendance from allAttendanceData
+  useEffect(() => {
+    if (batchId) return
+    if (!allAttendanceData?.attendances) return
+
+    const temp = {}
+
+    allAttendanceData.attendances.forEach((a) => {
+      ;(a.students || []).forEach((s) => {
+        const normalizedDays = {}
+
+        Object.entries(s.days || {}).forEach(([day, value]) => {
+          normalizedDays[String(day)] = value
+        })
+
+        const sid = String(s.student?._id || s.student)
+        temp[sid] = normalizedDays || {}
+      })
+    })
+
+    setRegister(temp)
+  }, [allAttendanceData, batchId])
 
   /* -------------------------------
      RESET ON FILTER CHANGE
@@ -141,8 +178,9 @@ const AttendanceRegister = ({ batches, onBack }) => {
   /* -------------------------------
      FILTER STUDENTS
   -------------------------------- */
+  const studentList = batch?.students || allStudents
   const filteredStudents =
-    batch?.students?.filter((item) =>
+    (studentList || []).filter((item) =>
       item.student?.name?.toLowerCase().includes(search.toLowerCase())
     ) || []
 
@@ -233,7 +271,7 @@ const AttendanceRegister = ({ batches, onBack }) => {
       </div>
 
       {/* TABLE */}
-      {batch && (
+      {(batch || allStudents.length > 0) && (
         <div className="table-responsive">
           <table className="table table-bordered table-sm text-center">
             <thead className="table-light">

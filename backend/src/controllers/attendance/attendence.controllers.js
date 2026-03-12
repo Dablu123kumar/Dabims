@@ -1,6 +1,18 @@
 import AttendentcModel from "../../models/attendance/attendence.model.js"
 import Batch from "../../models/batch.model.js"
 
+
+export const createAttendence = async (req,res) =>{
+  try {
+    
+    
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    })
+  }
+}
 export const markBatchAttendence = async (req, res) => {
   try {
     const { batchId, month, year, students } = req.body
@@ -64,6 +76,24 @@ export const markBatchAttendence = async (req, res) => {
   }
 }
 
+export const getAllAttendance = async(req,res)=>{
+  try {
+    const attendances = await AttendentcModel.find()
+      .populate('batch', 'name')
+      .populate('students.student', 'name')
+      .lean()
+
+    return res.status(200).json({
+      success: true,
+      attendances,
+    })
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    })
+  }
+}
 
 export const getAttendenceByBatch = async(req,res)=>{
     try {

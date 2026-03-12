@@ -18,6 +18,11 @@ const trainerSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    trainerRole : {
+      type : String,
+      required : true,
+      default : "Trainer"
+    },
     companyId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Company",

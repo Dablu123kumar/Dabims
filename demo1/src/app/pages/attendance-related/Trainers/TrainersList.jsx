@@ -87,6 +87,7 @@ const TrainersList = () => {
                   <th className='min-w-150px'>Trainer's Name</th>
                   <th className='min-w-140px'>Trainer Designation</th>
                   <th className='min-w-140px'>Trainer Email</th>
+                  <th className='min-w-140px'>Trainer Role</th>
                   <th className='min-w-120px'>Company</th>
                   <th className='min-w-100px text-end'>Actions</th>
                 </tr>
@@ -127,6 +128,14 @@ const TrainersList = () => {
                           className='text-dark fw-bold text-hover-primary d-block fs-6'
                         >
                           {trainer?.trainerEmail}
+                        </div>
+                      </td>
+                      <td>
+                        <div
+                          style={{ cursor: 'pointer' }}
+                          className='text-dark fw-bold text-hover-primary d-block fs-6'
+                        >
+                          {trainer?.trainerRole}
                         </div>
                       </td>
                       <td className='text-end'>
