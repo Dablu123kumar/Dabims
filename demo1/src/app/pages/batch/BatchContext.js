@@ -1,5 +1,5 @@
 import axios from 'axios'
-import {createContext, useContext, useEffect} from 'react'
+import {createContext, useContext} from 'react'
 import {useMutation, useQuery, useQueryClient} from 'react-query'
 import {useAuth} from '../../modules/auth'
 import {toast} from 'react-toastify'
@@ -19,7 +19,7 @@ const createBatchApi = async (payload, config) => {
 
 // GET ALL BATCH WITH FILTERS
 const fetchAllBathes = async (filters,companyId, config) => {
-  console.log('compny',companyId)
+  //console.log('compny',companyId)
   // const query = new URLSearchParams(filters).toString()
   const query = new URLSearchParams(
   Object.entries(filters).reduce((acc, [key, value]) => {

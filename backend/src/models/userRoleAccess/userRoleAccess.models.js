@@ -11,6 +11,7 @@ const userRoleAccessSchema = new mongoose.Schema(
         "Telecaller",
         "Accounts",
         "Counsellor",
+        "Trainer",
         "Admin",
         "SuperAdmin",
       ], // Enum for predefined roles

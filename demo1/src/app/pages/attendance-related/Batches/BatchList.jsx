@@ -1,18 +1,12 @@
-import { useState } from 'react'
-import { useBatchContext } from '../../batch/BatchContext'
+import {useState} from 'react'
+import {useBatchContext} from '../../batch/BatchContext'
 import DeleteConfirmationModal from '../../../modules/auth/components/DeleteConfirmationModal'
 
-const BatchList = ({
-  batches,
-  onEdit,
-  onView,
-  onAddStudent,
-  onDelete,
-}) => {
+const BatchList = ({batches, onEdit, onView, onAddStudent, onDelete}) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [batchToDelete, setBatchToDelete] = useState(null)
-  
-  const { useDeleteBatch, useUpdateBatchStatus } = useBatchContext()
+
+  const {useDeleteBatch, useUpdateBatchStatus} = useBatchContext()
   const deleteMutation = useDeleteBatch()
   const updateStatusMutation = useUpdateBatchStatus()
 
@@ -27,18 +21,16 @@ const BatchList = ({
         onSuccess: () => {
           setShowDeleteConfirm(false)
           setBatchToDelete(null)
-        }
+        },
       })
     }
   }
 
   const handleStatusToggle = (batch) => {
     const newStatus = batch.status === 'inProgress' ? 'completed' : 'inProgress'
-    updateStatusMutation.mutate(
-      { id: batch._id, status: newStatus }
-    )
+    updateStatusMutation.mutate({id: batch._id, status: newStatus})
   }
-  console.log('batch', batches)
+  //console.log('batch', batches)
 
   return (
     <>
@@ -57,13 +49,15 @@ const BatchList = ({
             </tr>
           </thead>
           <tbody>
-            {batches.map(batch => (
+            {batches.map((batch) => (
               <tr key={batch._id}>
                 <td>
                   <strong>{batch.name}</strong>
                 </td>
                 <td>{batch.trainer?.trainerName}</td>
-                <td>{batch.startTime} - {batch.endTime}</td>
+                <td>
+                  {batch.startTime} - {batch.endTime}
+                </td>
                 <td>{new Date(batch.startDate).toLocaleDateString()}</td>
                 <td>{batch.endDate ? new Date(batch.endDate).toLocaleDateString() : '-'}</td>
                 <td>
@@ -71,9 +65,11 @@ const BatchList = ({
                 </td>
                 <td>
                   <button
-                    className={`badge ${batch.status === 'inProgress' ? 'bg-warning' : 'bg-success'}`}
+                    className={`badge ${
+                      batch.status === 'inProgress' ? 'bg-warning' : 'bg-success'
+                    }`}
                     onClick={() => handleStatusToggle(batch)}
-                    style={{ cursor: 'pointer', border: 'none' }}
+                    style={{cursor: 'pointer', border: 'none'}}
                   >
                     {batch.status}
                   </button>

@@ -106,7 +106,9 @@ const UserRoleAccessManagement = () => {
             {userRoleAccessData?.length > 0 ? (
               userRoleAccessData?.map((role) => (
                 <>
-                  <option value={role.role} key={role._id}>{role.role}</option>
+                  <option value={role.role} key={role._id}>
+                    {role.role}
+                  </option>
                 </>
               ))
             ) : (
@@ -118,6 +120,7 @@ const UserRoleAccessManagement = () => {
                 <option value='Telecaller'>Telecaller</option>
                 <option value='Accounts'>Accounts</option>
                 <option value='Counsellor'>Counsellor</option>
+                <option value='Trainer'>Trainer</option>
                 <option value='Admin'>Admin</option>
               </>
             )}

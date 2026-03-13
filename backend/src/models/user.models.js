@@ -26,6 +26,7 @@ const userSchema = new mongoose.Schema(
         "Accounts",
         "Counsellor",
         "Telecaller",
+        "Trainer",
         "Admin",
         "SuperAdmin",
         "Student",
@@ -55,7 +56,7 @@ const userSchema = new mongoose.Schema(
       default: false,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const userModel = mongoose.model("User", userSchema);

@@ -3,6 +3,8 @@ import AttendanceRegister from "./Attendence"
 
 const BatchReport = ({batches, onBack}) => {
   console.log('batches',batches)
+  const user = JSON.parse(localStorage.getItem('kt-auth-react-v'))
+  console.log(user)
   return (
     <>
        {/* Header */}
@@ -70,17 +72,24 @@ const BatchReport = ({batches, onBack}) => {
                         <th className="sticky-col sticky-col-2">Student Name</th>
                         <th>Course</th>
                         <th>Date of joining</th>
-                        <th>Software</th>
+                        <th>Subjects</th>
                         {/* <th>Total Subjects</th>
                         <th>Progress</th> */}
-                        <th>Remaining Fees</th>
+                        {
+                          user?.role === 'Trainer' ? (
+                            <th style={{display:'none'}}>Remaining Fees</th>
+
+                          ) :(
+                            <th>Remaining Fees</th>
+                          )
+                        }
                         <th>Status</th>
                       </tr>
                     </thead>
 
                     <tbody>
                       {batch.students.map((item, index) => {
-                        // console.log('item', item)
+                         //console.log('item', item)
                         // const totalSubjects = item.subjects.length
                         // const avgProgress =
                         //   totalSubjects > 0
@@ -101,7 +110,15 @@ const BatchReport = ({batches, onBack}) => {
                             </td>
                             {/* <td>{totalSubjects}</td> */}
                             {/* <td>{avgProgress}%</td> */}
-                            <td>{item.student?.remainingCourseFees || '0000'}</td>
+                             {
+                          user?.role === 'Trainer' ? (
+                           <td style={{display:'none'}}>{item.student?.remainingCourseFees }</td>
+
+                          ) :(
+                            <td>{item.student?.remainingCourseFees}</td>
+                          )
+                        }
+                            
                             <td>{batch?.status}</td>
                           </tr>
                         )

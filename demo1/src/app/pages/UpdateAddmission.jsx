@@ -70,6 +70,7 @@ const UpdateAddmission = () => {
   const {data} = companyCTX?.useGetSingleCompanyData(
     updateUserId === null ? params?.id : updateUserId?.companyName
   )
+  const oldCourse  = updateUserId?.select_course
 
   useEffect(() => {
     if (updateUserId['remainingCourseFees'] !== undefined) {
@@ -84,7 +85,9 @@ const UpdateAddmission = () => {
         Number(updateUserId.netCourseFees / updateUserId?.no_of_installments).toFixed(2)
       )
     }
-  }, [])
+  },[])
+
+  //console.log(updateUserId.select_course)
 
   const handleSelectChange = (event) => {
     const selectedCourse = event.target.value
@@ -201,6 +204,7 @@ const UpdateAddmission = () => {
         formData.append('id', updateUserId?._id)
         // formData.append('course name id ', updateUserId?.courseName._id)
         formData.append('courseName', selectedCourseId)
+        formData.append('oldCourse', oldCourse)
 
         const res = context.updateStudentMutation.mutate(formData)
         //console.log('res',res)

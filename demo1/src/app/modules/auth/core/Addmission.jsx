@@ -161,22 +161,27 @@ export const AdmissionContextProvider = ({ children }) => {
           //console.log('response',res)
           if(res.status === 200){
             toast.success(`Student Updated Successfully`)
-            return res.data
+            return {
+              student : res.data,
+              oldCourse : updateStudent.get('oldCourse'),
+            }
           }
         })
     },
 
     onSuccess: async (res,variables) =>{
-            console.log('res', res)
-            const updatedStudent = res
-            console.log(updatedStudent)
+            //console.log('res', res)
+            const updatedStudent = res.student
+            const oldCourse = res.oldCourse
+            const newCourse = updatedStudent.select_course
+            //console.log(updatedStudent)
             
               // ✅ Detect course change
     const courseChanged =
       updatedStudent?.message?.toLowerCase().includes("course") ||
       updatedStudent?.select_course;
 
-    if (courseChanged) {
+    if (oldCourse !== newCourse) {
       await axios.post(
         `${BASE_URL}/api/students/sendCourseChangeEmail`,
         {

@@ -14,7 +14,7 @@ import AttendanceRegister from './Attendence'
 
 const BatchManagement = () => {
   const { id: companyId } = useParams()
-  console.log('companyId',companyId)
+  //console.log('companyId',companyId)
   const [activeTab, setActiveTab] = useState('list') // list, create, details, addStudent, progress, report
   const [selectedBatch, setSelectedBatch] = useState(null)
   const [selectedStudent, setSelectedStudent] = useState(null)

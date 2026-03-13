@@ -50,7 +50,7 @@ export const addUserRolePermissionAccessController = asyncHandler(
         .status(500)
         .json({ success: false, message: "Internal Server Error!!" });
     }
-  }
+  },
 );
 
 export const getAllUserAccessRoleDataController = asyncHandler(
@@ -65,5 +65,5 @@ export const getAllUserAccessRoleDataController = asyncHandler(
         .status(500)
         .json({ success: false, message: "Internal Server Error!!" });
     }
-  }
+  },
 );
