@@ -2,26 +2,21 @@ import AttendentcModel from "../../models/attendance/attendence.model.js"
 import Batch from "../../models/batch.model.js"
 
 
-export const createAttendence = async (req,res) =>{
+export const createAttendence = async (req, res) => {
   try {
-    
-    
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    })
-  }
-}
-export const markBatchAttendence = async (req, res) => {
-  try {
-    const { batchId, month, year, students } = req.body
+    const { month, year, students } = req.body
 
-    const batchExist = await Batch.findById(batchId)
-    if (!batchExist) {
-      return res.status(404).json({
+    if (month === undefined || year === undefined) {
+      return res.status(400).json({
         success: false,
-        message: 'Batch not found',
+        message: "Month and Year are required",
+      })
+    }
+
+    if (!students || !Array.isArray(students) || students.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Students data is required",
       })
     }
 
@@ -32,7 +27,7 @@ export const markBatchAttendence = async (req, res) => {
       today.getDate()
     )
 
-    // 🔐 FUTURE DATE VALIDATION
+    // Validate
     for (const student of students) {
       if (!student.days) continue
 
@@ -43,31 +38,185 @@ export const markBatchAttendence = async (req, res) => {
         if (attendanceDate > todayDate) {
           return res.status(400).json({
             success: false,
-            message: `Cannot mark attendance for future date`,
+            message: "Cannot mark attendance for future date",
           })
         }
 
         const value = student.days[dayKey]
-        if (value !== 'P' && value !== 'A') {
+
+        if (value !== "P" && value !== "A") {
           return res.status(400).json({
             success: false,
-            message: 'Invalid attendance value',
+            message: "Invalid attendance value. Only P or A allowed",
           })
         }
       }
     }
 
     const attendance = await AttendentcModel.findOneAndUpdate(
-      { batch: batchId, month, year },
-      { batch: batchId, month, year, students },
+      {
+        type: "GLOBAL",
+        month,
+        year
+      },
+      {
+        type: "GLOBAL",
+        batch: null,
+        month,
+        year,
+        students
+      },
       { upsert: true, new: true }
     )
 
     return res.status(200).json({
       success: true,
-      message: 'Attendance Saved Successfully',
+      message: "Global Attendance Saved Successfully",
       attendance,
     })
+
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    })
+  }
+}
+
+
+// export const markBatchAttendence = async (req, res) => {
+//   try {
+//     const { batchId, month, year, students } = req.body
+
+//     const batchExist = await Batch.findById(batchId)
+//     if (!batchExist) {
+//       return res.status(404).json({
+//         success: false,
+//         message: 'Batch not found',
+//       })
+//     }
+
+//     const today = new Date()
+//     const todayDate = new Date(
+//       today.getFullYear(),
+//       today.getMonth(),
+//       today.getDate()
+//     )
+
+//     // 🔐 FUTURE DATE VALIDATION
+//     for (const student of students) {
+//       if (!student.days) continue
+
+//       for (const dayKey of Object.keys(student.days)) {
+//         const day = Number(dayKey)
+//         const attendanceDate = new Date(year, month, day)
+
+//         if (attendanceDate > todayDate) {
+//           return res.status(400).json({
+//             success: false,
+//             message: `Cannot mark attendance for future date`,
+//           })
+//         }
+
+//         const value = student.days[dayKey]
+//         if (value !== 'P' && value !== 'A') {
+//           return res.status(400).json({
+//             success: false,
+//             message: 'Invalid attendance value',
+//           })
+//         }
+//       }
+//     }
+
+//     const attendance = await AttendentcModel.findOneAndUpdate(
+//       { batch: batchId, month, year },
+//       { batch: batchId, month, year, students },
+//       { upsert: true, new: true }
+//     )
+
+//     return res.status(200).json({
+//       success: true,
+//       message: 'Attendance Saved Successfully',
+//       attendance,
+//     })
+//   } catch (error) {
+//     return res.status(500).json({
+//       success: false,
+//       message: error.message,
+//     })
+//   }
+// }
+
+export const markBatchAttendence = async (req, res) => {
+  try {
+
+    const { batchId, month, year, students } = req.body
+
+    const batchExist = await Batch.findById(batchId)
+
+    if (!batchExist) {
+      return res.status(404).json({
+        success: false,
+        message: "Batch not found",
+      })
+    }
+
+    const today = new Date()
+    const todayDate = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate()
+    )
+
+    for (const student of students) {
+      if (!student.days) continue
+
+      for (const dayKey of Object.keys(student.days)) {
+
+        const day = Number(dayKey)
+        const attendanceDate = new Date(year, month, day)
+
+        if (attendanceDate > todayDate) {
+          return res.status(400).json({
+            success: false,
+            message: "Cannot mark attendance for future date",
+          })
+        }
+
+        const value = student.days[dayKey]
+
+        if (value !== "P" && value !== "A") {
+          return res.status(400).json({
+            success: false,
+            message: "Invalid attendance value",
+          })
+        }
+      }
+    }
+
+    const attendance = await AttendentcModel.findOneAndUpdate(
+      {
+        type: "BATCH",
+        batch: batchId,
+        month,
+        year
+      },
+      {
+        type: "BATCH",
+        batch: batchId,
+        month,
+        year,
+        students
+      },
+      { upsert: true, new: true }
+    )
+
+    return res.status(200).json({
+      success: true,
+      message: "Batch Attendance Saved Successfully",
+      attendance,
+    })
+
   } catch (error) {
     return res.status(500).json({
       success: false,

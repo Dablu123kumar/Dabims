@@ -133,7 +133,7 @@ const AttendanceRegister = ({ batches, onBack }) => {
       }
     })
   }
-
+ 
   /* -------------------------------
      COUNT P & A
   -------------------------------- */

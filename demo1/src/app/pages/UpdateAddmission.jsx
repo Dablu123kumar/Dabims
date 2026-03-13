@@ -70,22 +70,34 @@ const UpdateAddmission = () => {
   const {data} = companyCTX?.useGetSingleCompanyData(
     updateUserId === null ? params?.id : updateUserId?.companyName
   )
+  console.log(updateUserId)
   const oldCourse  = updateUserId?.select_course
 
+  // useEffect(() => {
+  //   if (updateUserId['remainingCourseFees'] !== undefined) {
+  //     formik.setFieldValue('netCourseFees', Number(updateUserId?.remainingCourseFees).toFixed(2))
+  //     formik.setFieldValue(
+  //       'no_of_installments_amount',
+  //       Number(updateUserId?.remainingCourseFees / updateUserId?.no_of_installments).toFixed(2)
+  //     )
+  //   } else {
+  //     formik.setFieldValue(
+  //       'no_of_installments_amount',
+  //       Number(updateUserId.netCourseFees / updateUserId?.no_of_installments).toFixed(2)
+  //     )
+  //   }
+  // },[])
   useEffect(() => {
-    if (updateUserId['remainingCourseFees'] !== undefined) {
-      formik.setFieldValue('netCourseFees', Number(updateUserId?.remainingCourseFees).toFixed(2))
-      formik.setFieldValue(
-        'no_of_installments_amount',
-        Number(updateUserId?.remainingCourseFees / updateUserId?.no_of_installments).toFixed(2)
-      )
-    } else {
-      formik.setFieldValue(
-        'no_of_installments_amount',
-        Number(updateUserId.netCourseFees / updateUserId?.no_of_installments).toFixed(2)
-      )
-    }
-  },[])
+  const remaining =
+    updateUserId?.remainingCourseFees ?? updateUserId?.netCourseFees
+
+  const installments = updateUserId?.no_of_installments || 1
+
+  formik.setFieldValue(
+    'no_of_installments_amount',
+    Number(remaining / installments).toFixed(2)
+  )
+}, [])
 
   //console.log(updateUserId.select_course)
 
@@ -104,15 +116,22 @@ const UpdateAddmission = () => {
   }
 
   const handleCourseFeesDiscount = (e) => {
-    formik.setFieldValue('netCourseFees', 0)
-    const amount = updateUserId
-      ? Number(formik.values.course_fees)
-      : selectedCourseNameData?.courseFees
+    // formik.setFieldValue('netCourseFees', 0)
+    // const amount = updateUserId
+    //   ? Number(formik.values.course_fees)
+    //   : selectedCourseNameData?.courseFees
+    // const discount = Number(e.target.value)
+
+    // const discountAmount = Number(amount) - discount
+
+    // formik.setFieldValue('netCourseFees', discountAmount)
     const discount = Number(e.target.value)
+    const courseFees = Number(formik.values.course_fees)
 
-    const discountAmount = Number(amount) - discount
+    const netFees = courseFees - discount
 
-    formik.setFieldValue('netCourseFees', discountAmount)
+    formik.setFieldValue('discount',discount)
+    formik.setFieldValue('netCourseFees',netFees)
   }
 
   const downPaymentHandler = (e) => {
@@ -161,10 +180,16 @@ const UpdateAddmission = () => {
 
   const numberOfInstallmentAmountHandler = (e) => {
     //console.log(e.target.value)
-    const numberOfInstallmentAmount = Number(formik.values.netCourseFees) / Number(e.target.value)
+    // const numberOfInstallmentAmount = Number(formik.values.netCourseFees) / Number(e.target.value)
+    const installments = Number(e.target.value)
+    if(!installments || installments === 0 ) return
+
+    const remainingFees = Number(formik.values.remainingCourseFees) || Number(formik.values.netCourseFees)
+    //const netFees = Number(formik.values.netCourseFees)
+    const installmentAmount = remainingFees / installments
     //console.log(numberOfInstallmentAmount)
-    formik.setFieldValue('no_of_installments_amount', numberOfInstallmentAmount.toFixed(2))
-    formik.setFieldValue('no_of_installments', e.target.value)
+    formik.setFieldValue('no_of_installments', installments)
+    formik.setFieldValue('no_of_installments_amount', installmentAmount.toFixed(2))
   }
 
   const navigate = useNavigate()
@@ -727,29 +752,28 @@ const UpdateAddmission = () => {
                   <div className='col-6'>
                     <div className='row mb-6'>
                       <label className='col-lg-4 col-form-label fw-bold fs-6'>
-                        <span className=''>D.O.J</span>
+                        <span className=''>Remaining Course Fees</span>
                       </label>
 
                       <div className='col-lg-8 fv-row'>
-                        <DatePicker
-                          selected={formik.values.date_of_joining}
-                          onChange={(date) => formik.setFieldValue('date_of_joining', date)}
-                          dateFormat='dd/MM/yyyy'
+                        <input
+                          type='number'
                           className='form-control form-control-lg form-control-solid'
-                          placeholderText='DD/MM/YYYY'
+                          placeholder='Net Course Fees'
+                          value={updateUserId?.remainingCourseFees}
+                          // {...formik.getFieldProps('netCourseFees')}
+                          readOnly
                         />
-                        {/* <Calendar
-                          onChange={(date) => formik.setFieldValue('date_of_joining', date)}
-                          value={formik.values.date_of_joining}
-                        /> */}
-                        {formik.touched.date_of_joining && formik.errors.date_of_joining && (
+                        {/* {formik.touched.netCourseFees && formik.errors.netCourseFees && (
                           <div className='fv-plugins-message-container'>
-                            <div className='fv-help-block'>{formik.errors.date_of_joining}</div>
+                            <div className='fv-help-block'>{formik.errors.netCourseFees}</div>
                           </div>
-                        )}
+                        )} */}
                       </div>
                     </div>
                   </div>
+
+                 
                 </div>
               </>
 
@@ -786,6 +810,7 @@ const UpdateAddmission = () => {
                     </div>
                   </div>
                 </div>
+
                 <div className='col-6'>
                   <div className='row mb-6'>
                     <label className='col-lg-4 col-form-label  fw-bold fs-6'>
@@ -803,6 +828,7 @@ const UpdateAddmission = () => {
                     </div>
                   </div>
                 </div>
+
                 <div className='col-6'>
                   <div className='row mb-6'>
                     <label className='col-lg-4 col-form-label fw-bold fs-6'>
@@ -824,7 +850,35 @@ const UpdateAddmission = () => {
                       )}
                     </div>
                   </div>
+                 
                 </div>
+
+                  <div className='col-6'>
+                    <div className='row mb-6'>
+                      <label className='col-lg-4 col-form-label fw-bold fs-6'>
+                        <span className=''>D.O.J</span>
+                      </label>
+
+                      <div className='col-lg-8 fv-row'>
+                        <DatePicker
+                          selected={formik.values.date_of_joining}
+                          onChange={(date) => formik.setFieldValue('date_of_joining', date)}
+                          dateFormat='dd/MM/yyyy'
+                          className='form-control form-control-lg form-control-solid'
+                          placeholderText='DD/MM/YYYY'
+                        />
+                        {/* <Calendar
+                          onChange={(date) => formik.setFieldValue('date_of_joining', date)}
+                          value={formik.values.date_of_joining}
+                        /> */}
+                        {formik.touched.date_of_joining && formik.errors.date_of_joining && (
+                          <div className='fv-plugins-message-container'>
+                            <div className='fv-help-block'>{formik.errors.date_of_joining}</div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
               </div>
 
               {/* ---------------------------FOR OFFICE USE ONLY END HERE ----------------------- */}
