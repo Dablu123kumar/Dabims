@@ -309,8 +309,8 @@ export const addStudentToBatch = async (req, res) => {
 
     // Validate subjects exist
     for (const subject of subjects) {
-      console.log("subject received:", subject);
-      console.log("subject.subject value:", subject.subject);
+      //console.log("subject received:", subject);
+      //console.log("subject.subject value:", subject.subject);
       const subjectExists = await SubjectModel.findById(
         subject.subject || subject
       );
@@ -322,7 +322,7 @@ export const addStudentToBatch = async (req, res) => {
       }
     }
 
-    console.log("first");
+    //console.log("first");
     batch.students.push({
       student: studentId,
       currentSoftware: currentSoftware,

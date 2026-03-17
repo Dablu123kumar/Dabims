@@ -105,6 +105,7 @@ const batchSchema = new mongoose.Schema(
   }
 );
 
+
 // Add index for efficient querying
 batchSchema.index({ trainer: 1, startTime: 1, endTime: 1 });
 

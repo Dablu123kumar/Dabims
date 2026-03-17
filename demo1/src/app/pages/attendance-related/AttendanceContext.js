@@ -335,6 +335,30 @@ export const AttendanceContextProvider = ({children}) => {
     }
   })
 
+  const saveAllStudentsAttendanceMutation = useMutation({
+    mutationFn : async(data)=>{
+      const res = await axios.post(
+        `${BASE_URL}/api/attendence/all-stu-attendance`,
+        data,
+        config
+      )
+      return res.data
+    },
+    onSuccess : async(data)=>{
+      console.log(data)
+      toast.success(data?.message)
+    },
+    onSettled :async(_, error)=>{
+      if(error){
+        console.log(error)
+        toast.error(error.response?.data?.message || 'Error in saving all students attendance')
+      }
+      else{
+        await queryClient.invalidateQueries({queryKey : ['getAttendance']})
+      }
+    }
+  })
+
   const useGateAttendenceByBatch = (batchId,month,year) =>{
     return useQuery(
       ['getAttendance',batchId,month,year],
@@ -399,6 +423,7 @@ export const AttendanceContextProvider = ({children}) => {
 
         // attendence
         saveAttendenceMutation,
+        saveAllStudentsAttendanceMutation,
         useGateAttendenceByBatch,
         useGateAttendanceByStudentId,
         useGetAllAttendance

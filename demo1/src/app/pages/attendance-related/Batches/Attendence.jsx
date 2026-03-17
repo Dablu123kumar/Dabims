@@ -4,7 +4,7 @@ import { useBatchContext } from '../../batch/BatchContext'
 import { useAdmissionContext } from '../../../modules/auth/core/Addmission'
 
 const AttendanceRegister = ({ batches, onBack }) => {
-  const { saveAttendenceMutation, useGateAttendenceByBatch,useGetAllAttendance } =
+  const { saveAttendenceMutation, saveAllStudentsAttendanceMutation,  useGateAttendenceByBatch,useGetAllAttendance } =
     useAttendanceContext()
   const { useGetBatchById } = useBatchContext()
     const ctx = useAdmissionContext()
@@ -49,71 +49,102 @@ const AttendanceRegister = ({ batches, onBack }) => {
 
   // build a flat list of all students from allAttendanceData (used when no batch selected)
   const allStudents =
-    allAttendanceData?.attendances?.flatMap((a) =>
-      (a.students || []).map((s) => ({ student: s.student }))
+    ctx.studentsLists?.data?.users?.map((s) =>({
+      student : s
+    })
     ) || []
+  // const allStudents =
+  //   allAttendanceData?.attendances?.flatMap((a) =>
+  //     (a.students || []).map((s) => ({ student: s.student }))
+  //   ) || []
   /* -------------------------------
      GET ATTENDANCE
   -------------------------------- */
-  const { data: attendanceData } = useGateAttendenceByBatch(
-    batchId,
-    month,
-    year,
-    { enabled: !!batchId }
-  )
+  // const { data: attendanceData } = useGateAttendenceByBatch(
+  //   batchId,
+  //   month,
+  //   year,
+  //   { enabled: !!batchId }
+  // )
 
   /* -------------------------------
      LOAD SAVED ATTENDANCE
   -------------------------------- */
  
   useEffect(() => {
-    if (!attendanceData?.students ) return
+    if (!allAttendanceData?.attendances ) return
+
+    const attendance = allAttendanceData.attendances.find(
+      (a)=> a.month === month && a.year === year && a.type === 'GLOBAL'
+    )
+    if(!attendance) return
+
 
     const temp = {}
 
-    attendanceData.students.forEach((s) => {
+    attendance.students.forEach((s) => {
       const normalizedDays = {}
 
       Object.entries(s.days || {}).forEach(([day,value])=>{
         normalizedDays[String(day)] = value
       })
 
-      temp[String(s.student)] = normalizedDays || {}
+      const sid = String(s.student?._id || s.student)
+
+
+      temp[sid] = normalizedDays || {}
     })
 
     setRegister(temp)
-  }, [attendanceData])
+  }, [allAttendanceData,month,year])
+  // useEffect(() => {
+  //   if (!attendanceData?.students ) return
+
+  //   const temp = {}
+
+  //   attendanceData.students.forEach((s) => {
+  //     const normalizedDays = {}
+
+  //     Object.entries(s.days || {}).forEach(([day,value])=>{
+  //       normalizedDays[String(day)] = value
+  //     })
+
+  //     temp[String(s.student)] = normalizedDays || {}
+  //   })
+
+  //   setRegister(temp)
+  // }, [attendanceData])
 
   // When no batch is selected, load the saved attendance from allAttendanceData
-  useEffect(() => {
-    if (batchId) return
-    if (!allAttendanceData?.attendances) return
+  // useEffect(() => {
+  //   if (batchId) return
+  //   if (!allAttendanceData?.attendances) return
 
-    const temp = {}
+  //   const temp = {}
 
-    allAttendanceData.attendances.forEach((a) => {
-      ;(a.students || []).forEach((s) => {
-        const normalizedDays = {}
+  //   allAttendanceData.attendances.forEach((a) => {
+  //     ;(a.students || []).forEach((s) => {
+  //       const normalizedDays = {}
 
-        Object.entries(s.days || {}).forEach(([day, value]) => {
-          normalizedDays[String(day)] = value
-        })
+  //       Object.entries(s.days || {}).forEach(([day, value]) => {
+  //         normalizedDays[String(day)] = value
+  //       })
 
-        const sid = String(s.student?._id || s.student)
-        temp[sid] = normalizedDays || {}
-      })
-    })
+  //       const sid = String(s.student?._id || s.student)
+  //       temp[sid] = normalizedDays || {}
+  //     })
+  //   })
 
-    setRegister(temp)
-  }, [allAttendanceData, batchId])
+  //   setRegister(temp)
+  // }, [allAttendanceData, batchId])
 
   /* -------------------------------
      RESET ON FILTER CHANGE
   -------------------------------- */
-  useEffect(() => {
-    if (!batchId) return
-    setRegister({})
-  }, [batchId, month, year])
+  // useEffect(() => {
+  //   if (!batchId) return
+  //   setRegister({})
+  // }, [batchId, month, year])
 
   /* -------------------------------
      TOGGLE ATTENDANCE (A ↔ P)
@@ -154,20 +185,55 @@ const AttendanceRegister = ({ batches, onBack }) => {
      SAVE ATTENDANCE
   -------------------------------- */
   const saveAttendance = () => {
-    if (!batch) return
-
-    const students = batch.students.map((item) => ({
+    let students = []
+    if (batchId && batch) {
+       students = batch.students.map((item) => ({
       student: item.student._id,
       days: register[item.student._id] || {},
     }))
+    }
+    else{
+       students = allStudents.map((item) => ({
+        student: item.student._id,
+        days: register[item.student._id] || {},
+      }))
+    }
+     saveAllStudentsAttendanceMutation.mutate({
+        month,
+        year,
+        students,
+      })
 
-    saveAttendenceMutation.mutate({
-      batchId: batch._id,
-      month,
-      year,
-      students,
-    })
   }
+  // const saveAttendance = () => {
+  //   if (batchId && batch) {
+  //     const students = batch.students.map((item) => ({
+  //     student: item.student._id,
+  //     days: register[item.student._id] || {},
+  //   }))
+
+  //   saveAttendenceMutation.mutate({
+  //     batchId: batch._id,
+  //     month,
+  //     year,
+  //     students,
+  //   })
+  //   }
+  //   else{
+
+  //     const students = allStudents.map((item) => ({
+  //       student: item.student._id,
+  //       days: register[item.student._id] || {},
+  //     }))
+  
+  //     saveAllStudentsAttendanceMutation.mutate({
+  //       month,
+  //       year,
+  //       students,
+  //     })
+  //   }
+
+  // }
 
   /* -------------------------------
      DAYS OF MONTH
@@ -178,7 +244,7 @@ const AttendanceRegister = ({ batches, onBack }) => {
   /* -------------------------------
      FILTER STUDENTS
   -------------------------------- */
-  const studentList = batch?.students || allStudents
+  const studentList = batchId ?  batch?.students  : allStudents
   const filteredStudents =
     (studentList || []).filter((item) =>
       item.student?.name?.toLowerCase().includes(search.toLowerCase())
@@ -197,17 +263,17 @@ const AttendanceRegister = ({ batches, onBack }) => {
           <button className="btn btn-light me-2" onClick={onBack}>
             Back
           </button>
-          {batch && (
+          
             <button
               className="btn btn-success"
-              disabled={saveAttendenceMutation.isLoading}
+              disabled={saveAttendenceMutation.isLoading || saveAllStudentsAttendanceMutation.isLoading}
               onClick={saveAttendance}
             >
-              {saveAttendenceMutation.isLoading
+              {saveAttendenceMutation.isLoading || saveAllStudentsAttendanceMutation.isLoading
                 ? 'Saving...'
                 : 'Save Attendance'}
             </button>
-          )}
+       
         </div>
       </div>
 

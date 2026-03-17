@@ -4,7 +4,7 @@ import AttendanceRegister from "./Attendence"
 const BatchReport = ({batches, onBack}) => {
   console.log('batches',batches)
   const user = JSON.parse(localStorage.getItem('kt-auth-react-v'))
-  console.log(user)
+  //console.log(user)
   return (
     <>
        {/* Header */}
