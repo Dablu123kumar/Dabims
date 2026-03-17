@@ -66,6 +66,7 @@ export default function AddForm() {
     createaddFormFieldData,
     getAllAddedFormsName,
   } = useDynamicFieldContext()
+  console.log(getAllCustomFormFieldDataQuery)
 
   const {
     handleSelectChange,
@@ -83,7 +84,7 @@ export default function AddForm() {
   } = useCustomFormFieldContext()
 
   const selectField = getAllDefaultSelectFields?.data?.defaultSelects
-  // console.log(selectField)
+   //console.log(selectField)
 
   const inputChangeHandler = (index, event, fieldName, type) => {
     handleInputChange(index, event, fieldName, type)
