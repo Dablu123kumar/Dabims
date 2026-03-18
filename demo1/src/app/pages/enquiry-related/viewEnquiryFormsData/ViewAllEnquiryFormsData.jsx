@@ -2,7 +2,7 @@ import React, {useState, useEffect, useCallback, useMemo} from 'react'
 import {toast} from 'react-toastify'
 import {KTIcon} from '../../../../_metronic/helpers'
 import {useCustomFormFieldContext} from '../dynamicForms/CustomFormFieldDataContext'
-import {useParams} from 'react-router-dom'
+import {Link, useParams} from 'react-router-dom'
 import {useDynamicFieldContext} from '../DynamicFieldsContext'
 // import { useCompanyContext } from '../../compay/CompanyContext'
 import {DragDropContext, Draggable, Droppable} from 'react-beautiful-dnd'
@@ -601,7 +601,10 @@ export default function ViewAllEnquiryFormsData() {
         </div>
 
         {/* Select Dropdown for Created/Updated */}
-        <div className='d-flex justify-content-end w-100'>
+        <div className='d-flex justify-content-end w-100 gap-5 align-items-center '>
+          <div>
+            <Link to={`/add-enquiry/${companyId}`} className='border'>Add Enquiry</Link>
+          </div>
           <select
             className='form-select form-select-sm w-auto'
             value={selectedDateType}

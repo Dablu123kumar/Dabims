@@ -10,6 +10,7 @@ const AddEnquiryForm = () => {
   // const [defaultFieldData, setDefaultFieldData] = useState({})
   // console.log(defaultFieldData)
   const [errors, setErrors] = useState({})
+  const navigate = useNavigate()
   const params = useParams()
   const {getAllCustomFormFieldDataQuery, getAllAddedFormsName, fields} = useDynamicFieldContext()
   const {
@@ -98,7 +99,7 @@ const AddEnquiryForm = () => {
           .map((company) => company._id)
       : []
 
-  // console.log(params.id)
+   //console.log(params.id)
 
   const formNameById = getAllAddedFormsName?.data
     ?.filter((formId) => formId._id === selectedFormId)
@@ -160,15 +161,15 @@ const AddEnquiryForm = () => {
       isValid = false
       errors['Mobile Number'] = 'Mobile Number is required!'
     }
-    if (!input.Email) {
-      isValid = false
-      errors.Email = 'Email is required!'
-      toast.error('Email is required!') // Email required toast
-    } else if (!emailRegex.test(input.Email)) {
-      isValid = false
-      errors.Email = 'Please enter a valid email address!'
-      toast.error('Please enter a valid email address!') // Invalid email toast
-    }
+    // if (!input.Email) {
+    //   isValid = false
+    //   errors.Email = 'Email is required!'
+    //   toast.error('Email is required!') // Email required toast
+    // } else if (!emailRegex.test(input.Email)) {
+    //   isValid = false
+    //   errors.Email = 'Please enter a valid email address!'
+    //   toast.error('Please enter a valid email address!') // Invalid email toast
+    // }
 
     // Define the types you want to validate
     const validTypes = [
@@ -217,7 +218,8 @@ const AddEnquiryForm = () => {
         formId: selectedFormId,
         companyId: params.id,
       })
-      window.location.reload()
+      navigate(`/view-form-data/${params.id}`)
+      //window.location.reload()
     }
   }
 
@@ -341,13 +343,13 @@ const AddEnquiryForm = () => {
                             onChange={handleChange}
                             onBlur={() => handleBlur('Email')}
                           />
-                          {isTouched.Email && !input.Email && (
+                          {/* {isTouched.Email && !input.Email && (
                             <div className='fv-plugins-message-container mx-5'>
                               <div className='fv-help-block' style={{whiteSpace: 'nowrap'}}>
                                 Email is required!
                               </div>
                             </div>
-                          )}
+                          )} */}
                         </div>
                       </div>
                     </div>

@@ -1,8 +1,10 @@
 import addFormModel from "../../models/customForm/addForm.models.js";
+import customFieldModel from "../../models/customForm/customForm.models.js";
 
 export const addFormsController = async (req, res, next) => {
   try {
-    const { formName } = req.body;
+    const { formName,companyName } = req.body;
+    console.log(req.body)
 
     // Check if a form with the same name already exists
     const existingForm = await addFormModel.findOne({ formName });
@@ -12,6 +14,13 @@ export const addFormsController = async (req, res, next) => {
 
     // Create the new form
     const newForm = await addFormModel.create(req.body);
+
+       // 2. 🔥 AUTO-LINK OLD FIELDS TO NEW FORM
+    await customFieldModel.updateMany(
+      { companyName: companyName },   // all fields of this company
+      { $addToSet: { formId: newForm._id } } // add new formId
+    );
+ 
     res.status(201).json(newForm);
   } catch (error) {
     res.status(500).json({ success: false, message: "Internal Server Error" });
