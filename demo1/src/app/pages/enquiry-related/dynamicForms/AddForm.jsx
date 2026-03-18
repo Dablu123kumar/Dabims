@@ -325,7 +325,7 @@ export default function AddForm() {
         <div className='card-header border-0 cursor-pointer'>
           <div className='card-title m-0'>
             <h3 className='fw-bolder m-0'>{` ${data?.companyName} -> ${
-              formNameAdded ? `${formNameAdded} ->` : ''
+              !isCreatingNewForm ? `${formNameAdded} ->` : ''
             } Customized Fields `}</h3>
           </div>
         </div>
