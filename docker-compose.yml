@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    container_name: node_backend
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - MONGO_URI=mongodb+srv://bimt6387:bimt123@cluster0.vfwnlnz.mongodb.net/SchoolsStore?retryWrites=true&w=majority
+      
+      - USER_EMAIL=visualmediatechnology@gmail.com
+      - USER_PASSWORD=chxyprccnjxsdono
+
+      - JWT_SECRET=asbdfasdfbsdfabsjdfasdfjba
+      - FRONTEND_URL=http://localhost:3000
+      - BACKEND_URL=http://localhost:3001
+    restart: always
+
+  frontend:
+    build: ./demo1
+    container_name: react_frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    restart: always
+
+
+
+# version: '3.8'
+
+# services:
+#   backend:
+#     build: ./backend
+#     container_name: node_backend
+#     ports:
+#       - "3001:3001"
+#     environment:
+#       - PORT=3001
+#       - MONGO_URI=mongodb://mongo:27017/SchoolsStore
+#     depends_on:
+#       - mongo
+#     restart: always
+
+#   frontend:
+#     build: ./demo1
+#     container_name: react_frontend
+#     ports:
+#       - "3000:80"
+#     restart: always
+
+#   mongo:
+#     image: mongo:6
+#     container_name: mongo_db
+#     volumes:
+#       - mongo_data:/data/db
+#     restart: always
+
+# volumes:
+#   mongo_data:

@@ -335,7 +335,7 @@ export default function AddForm() {
               <div className='row'>
                 {getAllCustomFormFieldDataQuery.data
                   ?.filter((form) => {
-                    console.log('Checking:', form.formId, 'includes', formId)
+                    //console.log('Checking:', form.formId, 'includes', formId)
                     return form.formId?.includes(formId)
                   })
                   .map((field, index) => {

@@ -5,7 +5,7 @@ import { connectDB } from "./src/db/db.js";
 connectDB()
 
   .then(() => {
-    app.listen(PORT, () => {
+    app.listen(PORT || 3001 , "0.0.0.0" , () => {
       console.log(`Server listening on port ${PORT}`);
     });
   })
