@@ -6,16 +6,8 @@ services:
     container_name: node_backend
     ports:
       - "3001:3001"
-    environment:
-      - PORT=3001
-      - MONGO_URI=mongodb+srv://bimt6387:bimt123@cluster0.vfwnlnz.mongodb.net/SchoolsStore?retryWrites=true&w=majority
-      
-      - USER_EMAIL=visualmediatechnology@gmail.com
-      - USER_PASSWORD=chxyprccnjxsdono
-
-      - JWT_SECRET=asbdfasdfbsdfabsjdfasdfjba
-      - FRONTEND_URL=http://localhost:3000
-      - BACKEND_URL=http://localhost:3001
+    env_file:
+      - ./backend/.env   # ✅ secure way
     restart: always
 
   frontend:
