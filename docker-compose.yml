@@ -1,23 +1,23 @@
-version: '3.8'
+# version: '3.8'
 
-services:
-  backend:
-    build: ./backend
-    container_name: node_backend
-    ports:
-      - "3001:3001"
-    env_file:
-      - ./backend/.env   # ✅ secure way
-    restart: always
+# services:
+#   backend:
+#     build: ./backend
+#     container_name: node_backend
+#     ports:
+#       - "3001:3001"
+#     env_file:
+#       - ./backend/.env   # ✅ secure way
+#     restart: always
 
-  frontend:
-    build: ./demo1
-    container_name: react_frontend
-    ports:
-      - "3000:80"
-    depends_on:
-      - backend
-    restart: always
+#   frontend:
+#     build: ./demo1
+#     container_name: react_frontend
+#     ports:
+#       - "3000:80"
+#     depends_on:
+#       - backend
+#     restart: always
 
 
 

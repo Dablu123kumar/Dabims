@@ -6,6 +6,7 @@ import {useCustomFormFieldContext} from '../dynamicForms/CustomFormFieldDataCont
 import {toast} from 'react-toastify'
 
 const EnquiryForm = () => {
+  const navigate = useNavigate()
   const [isTouched, setIsTouched] = useState(false)
   // const [defaultFieldData, setDefaultFieldData] = useState({})
   // console.log(defaultFieldData)
@@ -213,12 +214,19 @@ const EnquiryForm = () => {
       toast.error('Please fill all the required fields !!')
     } else {
       // Proceed with form submission
-      createCustomFromsFieldValuesMutation.mutate({
-        ...formData,
-        formId: selectedFormId,
-        companyId: params.id,
-      })
-      window.location.reload()
+      createCustomFromsFieldValuesMutation.mutate(
+        {
+          ...formData,
+          formId: selectedFormId,
+          companyId: params.id,
+        },
+        {
+          onSuccess: () => {
+            toast.success('Enquiry added successfully!')
+            navigate(`/view-form-data/${params.id}`)
+          },
+        }
+      )
     }
   }
 

@@ -33,7 +33,7 @@ import allMails from "./routes/getAllEmailsData.routes.js";
 import emailTemplate from "./routes/emailTemplate.routes.js";
 import approvalRoutes from "./routes/approval.routes.js";
 import teacherRoutes from "./routes/teacher.routes.js";
-import attendenceRoute from './routes/attendence.routes.js'
+import attendenceRoute from "./routes/attendence.routes.js";
 
 const app = express();
 

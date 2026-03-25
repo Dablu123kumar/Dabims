@@ -213,13 +213,19 @@ const AddEnquiryForm = () => {
       toast.error('Please fill all the required fields !!')
     } else {
       // Proceed with form submission
-      createCustomFromFieldValuesMutation.mutate({
-        ...formData,
-        formId: selectedFormId,
-        companyId: params.id,
-      })
-      navigate(`/view-form-data/${params.id}`)
-      //window.location.reload()
+      createCustomFromFieldValuesMutation.mutate(
+        {
+          ...formData,
+          formId: selectedFormId,
+          companyId: params.id,
+        },
+        {
+          onSuccess: () => {
+            toast.success('Enquiry added successfully!')
+            navigate(`/view-form-data/${params.id}`)
+          },
+        }
+      )
     }
   }
 

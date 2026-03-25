@@ -135,15 +135,15 @@ export function Login() {
   if (showOTPForm) {
     return (
       <form
-        className='form w-100 bg-dark opacity-75 p-10 rounded'
+        className='form w-100 p-10 rounded'
         onSubmit={otpFormik.handleSubmit}
         noValidate
         id='kt_otp_form'
       >
         {/* begin::Heading */}
         <div className='text-center mb-11'>
-          <h1 className='text-white fw-bolder mb-3'>Verify OTP</h1>
-          <div className='text-gray-200 fw-semibold fs-6'>
+          <h1 className=' fw-bolder mb-3'>Verify OTP</h1>
+          <div className=' fw-semibold fs-6'>
             Enter the OTP sent to {userEmail}
           </div>
         </div>
@@ -163,12 +163,12 @@ export function Login() {
 
         {/* begin::Form group */}
         <div className='fv-row mb-8'>
-          <label className='form-label fs-6 fw-bolder text-white'>Enter OTP</label>
+          <label className='form-label fs-6 fw-bolder '>Enter OTP</label>
           <input
             placeholder='6-digit OTP'
             {...otpFormik.getFieldProps('otp')}
             className={clsx(
-              'form-control bg-transparent text-white',
+              'form-control bg-transparent ',
               {'is-invalid': otpFormik.touched.otp && otpFormik.errors.otp},
               {
                 'is-valid': otpFormik.touched.otp && !otpFormik.errors.otp,
@@ -195,7 +195,7 @@ export function Login() {
             className='btn btn-primary'
             disabled={otpFormik.isSubmitting || !otpFormik.isValid}
           >
-            {!loading && <span className='indicator-label text-white'>Verify OTP</span>}
+            {!loading && <span className='indicator-label '>Verify OTP</span>}
             {loading && (
               <span className='indicator-progress' style={{display: 'block'}}>
                 Please wait...
@@ -223,7 +223,7 @@ export function Login() {
         <div className='text-center mt-5'>
           <button
             type='button'
-            className='btn btn-link text-white'
+            className='btn btn-link '
             onClick={() => {
               setShowOTPForm(false)
               formik.resetForm()
@@ -242,15 +242,15 @@ export function Login() {
   // Show login form
   return (
     <form
-      className='form w-100 bg-dark opacity-75 rounded p-5 '
+      className='form  rounded p-5 '
       onSubmit={formik.handleSubmit}
       noValidate
       id='kt_login_signin_form'
     >
       {/* begin::Heading */}
       <div className='text-center mb-11'>
-        <h1 className='text-white fw-bolder mb-3'>Sign In</h1>
-        <div className='text-white fw-semibold fs-6'>Welcome to Our Institute</div>
+        <h1 className=' fw-bolder mb-3'>Sign In</h1>
+        <div className=' fw-semibold fs-6'>Welcome to Our Institute</div>
       </div>
       {/* begin::Heading */}
 
@@ -265,12 +265,12 @@ export function Login() {
 
       {/* begin::Form group */}
       <div className='fv-row mb-8'>
-        <label className='form-label fs-6 fw-bolder text-white'>Email</label>
+        <label className='form-label fs-6 fw-bolder '>Email</label>
         <input
           placeholder='Email'
           {...formik.getFieldProps('email')}
           className={clsx(
-            'form-control bg-transparent text-white',
+            'form-control bg-transparent ',
             {'is-invalid': formik.touched.email && formik.errors.email},
             {
               'is-valid': formik.touched.email && !formik.errors.email,
@@ -290,13 +290,13 @@ export function Login() {
 
       {/* begin::Form group */}
       <div className='fv-row mb-3'>
-        <label className='form-label fw-bolder  fs-6 mb-0 text-white'>Password</label>
+        <label className='form-label fw-bolder  fs-6 mb-0 '>Password</label>
         <input
           type='password'
           autoComplete='off'
           {...formik.getFieldProps('password')}
           className={clsx(
-            'form-control bg-transparent text-white',
+            'form-control bg-transparent ',
             {
               'is-invalid': formik.touched.password && formik.errors.password,
             },
@@ -332,12 +332,12 @@ export function Login() {
         <button
           type='submit'
           id='kt_sign_in_submit'
-          className='btn btn-outline-primary border border-primary '
+          className='btn btn-primary border border-primary '
           disabled={formik.isSubmitting || !formik.isValid}
         >
-          {!loading && <span className='indicator-label text-white'>Continue</span>}
+          {!loading && <span className='indicator-label '>Continue</span>}
           {loading && (
-            <span className='indicator-progress text-white' style={{display: 'block'}}>
+            <span className='indicator-progress ' style={{display: 'block'}}>
               Please wait...
               <span className='spinner-border spinner-border-sm align-middle ms-2'></span>
             </span>
@@ -346,7 +346,7 @@ export function Login() {
       </div>
       {/* end::Action */}
 
-      {/* <div className='text-gray-500 text-center fw-semibold fs-6 text-white'>
+      {/* <div className='text-gray-500 text-center fw-semibold fs-6 '>
         Not a Member yet?{' '}
         <Link to='/auth/registration' className='link-primary'>
           Sign up
