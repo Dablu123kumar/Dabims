@@ -4,11 +4,9 @@ import { useBatchContext } from '../../batch/BatchContext'
 import { useAdmissionContext } from '../../../modules/auth/core/Addmission'
 
 const AttendanceRegister = ({ batches, onBack }) => {
-  const { saveAttendenceMutation, saveAllStudentsAttendanceMutation,  useGateAttendenceByBatch,useGetAllAttendance } =
-    useAttendanceContext()
+  const { saveAllStudentsAttendanceMutation, useGetAllAttendance } = useAttendanceContext()
   const { useGetBatchById } = useBatchContext()
-    const ctx = useAdmissionContext()
-    console.log(ctx.studentsLists?.data?.users)
+  const ctx = useAdmissionContext()
 
   const today = new Date()
 
@@ -21,140 +19,65 @@ const AttendanceRegister = ({ batches, onBack }) => {
   /* -------------------------------
      DATE HELPERS
   -------------------------------- */
-  const todayDate = new Date(
-    today.getFullYear(),
-    today.getMonth(),
-    today.getDate()
-  )
+  const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate())
 
-  const isFutureDay = (day) => {
-    const cellDate = new Date(year, month, day)
-    return cellDate > todayDate
-  }
+  const isFutureDay = (day) => new Date(year, month, day) > todayDate
 
   /* -------------------------------
-     GET BATCH
+     ALL STUDENTS (canonical source — same IDs used everywhere)
   -------------------------------- */
-  const { data: batchData } = useGetBatchById(batchId, {
-    enabled: !!batchId,
-  })
+  const allStudents =
+    ctx.studentsLists?.data?.users?.map((s) => ({ student: s })) || []
 
+  /* -------------------------------
+     BATCH — fetch only for its student ID list
+  -------------------------------- */
+  const { data: batchData } = useGetBatchById(batchId, { enabled: !!batchId })
   const batch = batchData?.data
 
+  // Build a Set of student IDs that belong to the selected batch
+  const batchStudentIds = batchId
+    ? new Set((batch?.students || []).map((s) => String(s.student?._id || s.student)))
+    : null
+
   /* -------------------------------
-     GET ALL  ATTENDANCE
+     GET ALL ATTENDANCE (GLOBAL records)
   -------------------------------- */
   const { data: allAttendanceData } = useGetAllAttendance()
-  console.log('allattendence', allAttendanceData?.attendances)
-
-  // build a flat list of all students from allAttendanceData (used when no batch selected)
-  const allStudents =
-    ctx.studentsLists?.data?.users?.map((s) =>({
-      student : s
-    })
-    ) || []
-  // const allStudents =
-  //   allAttendanceData?.attendances?.flatMap((a) =>
-  //     (a.students || []).map((s) => ({ student: s.student }))
-  //   ) || []
-  /* -------------------------------
-     GET ATTENDANCE
-  -------------------------------- */
-  // const { data: attendanceData } = useGateAttendenceByBatch(
-  //   batchId,
-  //   month,
-  //   year,
-  //   { enabled: !!batchId }
-  // )
 
   /* -------------------------------
-     LOAD SAVED ATTENDANCE
+     LOAD SAVED ATTENDANCE INTO REGISTER
   -------------------------------- */
- 
   useEffect(() => {
-    if (!allAttendanceData?.attendances ) return
+    if (!allAttendanceData?.attendances) return
 
     const attendance = allAttendanceData.attendances.find(
-      (a)=> a.month === month && a.year === year && a.type === 'GLOBAL'
+      (a) => a.month === month && a.year === year && a.type === 'GLOBAL'
     )
-    if(!attendance) return
-
+    if (!attendance) {
+      setRegister({})
+      return
+    }
 
     const temp = {}
-
     attendance.students.forEach((s) => {
       const normalizedDays = {}
-
-      Object.entries(s.days || {}).forEach(([day,value])=>{
+      Object.entries(s.days || {}).forEach(([day, value]) => {
         normalizedDays[String(day)] = value
       })
-
       const sid = String(s.student?._id || s.student)
-
-
-      temp[sid] = normalizedDays || {}
+      temp[sid] = normalizedDays
     })
-
     setRegister(temp)
-  }, [allAttendanceData,month,year])
-  // useEffect(() => {
-  //   if (!attendanceData?.students ) return
-
-  //   const temp = {}
-
-  //   attendanceData.students.forEach((s) => {
-  //     const normalizedDays = {}
-
-  //     Object.entries(s.days || {}).forEach(([day,value])=>{
-  //       normalizedDays[String(day)] = value
-  //     })
-
-  //     temp[String(s.student)] = normalizedDays || {}
-  //   })
-
-  //   setRegister(temp)
-  // }, [attendanceData])
-
-  // When no batch is selected, load the saved attendance from allAttendanceData
-  // useEffect(() => {
-  //   if (batchId) return
-  //   if (!allAttendanceData?.attendances) return
-
-  //   const temp = {}
-
-  //   allAttendanceData.attendances.forEach((a) => {
-  //     ;(a.students || []).forEach((s) => {
-  //       const normalizedDays = {}
-
-  //       Object.entries(s.days || {}).forEach(([day, value]) => {
-  //         normalizedDays[String(day)] = value
-  //       })
-
-  //       const sid = String(s.student?._id || s.student)
-  //       temp[sid] = normalizedDays || {}
-  //     })
-  //   })
-
-  //   setRegister(temp)
-  // }, [allAttendanceData, batchId])
-
-  /* -------------------------------
-     RESET ON FILTER CHANGE
-  -------------------------------- */
-  // useEffect(() => {
-  //   if (!batchId) return
-  //   setRegister({})
-  // }, [batchId, month, year])
+  }, [allAttendanceData, month, year])
 
   /* -------------------------------
      TOGGLE ATTENDANCE (A ↔ P)
   -------------------------------- */
   const toggleAttendance = (studentId, day) => {
     if (isFutureDay(day)) return
-
     setRegister((prev) => {
       const prevValue = prev?.[studentId]?.[String(day)] || 'A'
-
       return {
         ...prev,
         [studentId]: {
@@ -164,7 +87,7 @@ const AttendanceRegister = ({ batches, onBack }) => {
       }
     })
   }
- 
+
   /* -------------------------------
      COUNT P & A
   -------------------------------- */
@@ -172,68 +95,23 @@ const AttendanceRegister = ({ batches, onBack }) => {
     const daysData = register[studentId] || {}
     let present = 0
     let absent = 0
-
     Object.values(daysData).forEach((v) => {
       if (v === 'P') present++
       if (v === 'A') absent++
     })
-
     return { present, absent }
   }
 
   /* -------------------------------
-     SAVE ATTENDANCE
+     SAVE — always saves all students into GLOBAL record
   -------------------------------- */
   const saveAttendance = () => {
-    let students = []
-    if (batchId && batch) {
-       students = batch.students.map((item) => ({
+    const students = allStudents.map((item) => ({
       student: item.student._id,
       days: register[item.student._id] || {},
     }))
-    }
-    else{
-       students = allStudents.map((item) => ({
-        student: item.student._id,
-        days: register[item.student._id] || {},
-      }))
-    }
-     saveAllStudentsAttendanceMutation.mutate({
-        month,
-        year,
-        students,
-      })
-
+    saveAllStudentsAttendanceMutation.mutate({ month, year, students })
   }
-  // const saveAttendance = () => {
-  //   if (batchId && batch) {
-  //     const students = batch.students.map((item) => ({
-  //     student: item.student._id,
-  //     days: register[item.student._id] || {},
-  //   }))
-
-  //   saveAttendenceMutation.mutate({
-  //     batchId: batch._id,
-  //     month,
-  //     year,
-  //     students,
-  //   })
-  //   }
-  //   else{
-
-  //     const students = allStudents.map((item) => ({
-  //       student: item.student._id,
-  //       days: register[item.student._id] || {},
-  //     }))
-  
-  //     saveAllStudentsAttendanceMutation.mutate({
-  //       month,
-  //       year,
-  //       students,
-  //     })
-  //   }
-
-  // }
 
   /* -------------------------------
      DAYS OF MONTH
@@ -243,17 +121,21 @@ const AttendanceRegister = ({ batches, onBack }) => {
 
   /* -------------------------------
      FILTER STUDENTS
+     - No batch: show all students
+     - Batch selected: filter allStudents to only those in the batch
+       (uses same student objects & IDs as the register)
   -------------------------------- */
-  const studentList = batchId ?  batch?.students  : allStudents
-  const filteredStudents =
-    (studentList || []).filter((item) =>
-      item.student?.name?.toLowerCase().includes(search.toLowerCase())
-    ) || []
+  const studentList = batchId
+    ? allStudents.filter((s) => batchStudentIds?.has(String(s.student?._id || s.student._id)))
+    : allStudents
+
+  const filteredStudents = studentList.filter((item) =>
+    item.student?.name?.toLowerCase().includes(search.toLowerCase())
+  )
 
   /* -------------------------------
      RENDER
   -------------------------------- */
-   //console.log('attendence',attendanceData)
   return (
     <>
       {/* HEADER */}
@@ -263,17 +145,13 @@ const AttendanceRegister = ({ batches, onBack }) => {
           <button className="btn btn-light me-2" onClick={onBack}>
             Back
           </button>
-          
-            <button
-              className="btn btn-success"
-              disabled={saveAttendenceMutation.isLoading || saveAllStudentsAttendanceMutation.isLoading}
-              onClick={saveAttendance}
-            >
-              {saveAttendenceMutation.isLoading || saveAllStudentsAttendanceMutation.isLoading
-                ? 'Saving...'
-                : 'Save Attendance'}
-            </button>
-       
+          <button
+            className="btn btn-success"
+            disabled={saveAllStudentsAttendanceMutation.isLoading}
+            onClick={saveAttendance}
+          >
+            {saveAllStudentsAttendanceMutation.isLoading ? 'Saving...' : 'Save Attendance'}
+          </button>
         </div>
       </div>
 
@@ -286,9 +164,7 @@ const AttendanceRegister = ({ batches, onBack }) => {
             value={batchId}
             onChange={(e) => setBatchId(e.target.value)}
           >
-            <option value="" hidden>
-              -- Select Batch --
-            </option>
+            <option value="">-- All Students --</option>
             {batches?.data?.map((b) => (
               <option key={b._id} value={b._id}>
                 {b.name}
@@ -306,9 +182,7 @@ const AttendanceRegister = ({ batches, onBack }) => {
           >
             {Array.from({ length: 12 }, (_, i) => (
               <option key={i} value={i}>
-                {new Date(0, i).toLocaleString('default', {
-                  month: 'long',
-                })}
+                {new Date(0, i).toLocaleString('default', { month: 'long' })}
               </option>
             ))}
           </select>
@@ -337,15 +211,12 @@ const AttendanceRegister = ({ batches, onBack }) => {
       </div>
 
       {/* TABLE */}
-      {(batch || allStudents.length > 0) && (
+      {allStudents.length > 0 && (
         <div className="table-responsive">
           <table className="table table-bordered table-sm text-center">
             <thead className="table-light">
               <tr>
-                <th
-                  className="sticky-col sticky-col-1 bg-white text-start"
-                  style={{ minWidth: 200 }}
-                >
+                <th className="sticky-col sticky-col-1 bg-white text-start" style={{ minWidth: 200 }}>
                   Student Name
                 </th>
                 {days.map((d) => (
@@ -358,41 +229,27 @@ const AttendanceRegister = ({ batches, onBack }) => {
 
             <tbody>
               {filteredStudents.map((item) => {
-                const { present, absent } = getAttendanceCount(
-                  item.student._id
-                )
-
+                const { present, absent } = getAttendanceCount(item.student._id)
                 return (
                   <tr key={item.student._id}>
                     <td className="sticky-col sticky-col-1 bg-white text-start fw-bold">
                       {item.student.name}
                     </td>
-
                     {days.map((day) => {
                       const isFuture = isFutureDay(day)
-                      const value =
-                        register[item.student._id]?.[String(day)] ?? 'A'
-
+                      const value = register[item.student._id]?.[String(day)] ?? 'A'
                       return (
                         <td key={day}>
                           <button
                             type="button"
                             disabled={isFuture}
-                            onClick={() =>
-                              toggleAttendance(item.student._id, day)
-                            }
+                            onClick={() => toggleAttendance(item.student._id, day)}
                             className={`fw-bold border-0 w-100 ${
-                              isFuture
-                                ? 'text-muted'
-                                : value === 'P'
-                                ? 'text-success'
-                                : 'text-danger'
+                              isFuture ? 'text-muted' : value === 'P' ? 'text-success' : 'text-danger'
                             }`}
                             style={{
                               height: 34,
-                              cursor: isFuture
-                                ? 'not-allowed'
-                                : 'pointer',
+                              cursor: isFuture ? 'not-allowed' : 'pointer',
                               background: 'transparent',
                             }}
                           >
@@ -401,7 +258,6 @@ const AttendanceRegister = ({ batches, onBack }) => {
                         </td>
                       )
                     })}
-
                     <td className="fw-bold text-success">{present}</td>
                     <td className="fw-bold text-danger">{absent}</td>
                   </tr>

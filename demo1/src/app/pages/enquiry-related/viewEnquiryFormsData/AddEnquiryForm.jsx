@@ -335,8 +335,8 @@ const AddEnquiryForm = () => {
                     </div>
                     <div className='col-6'>
                       <div className='row mb-6'>
-                        <label className='col-lg-4 col-form-label fw-bold fs-6 required'>
-                          Email
+                        <label className='col-lg-4 col-form-label fw-bold fs-6 '>
+                          Email (Optional)
                         </label>
                         <div className='col-lg-8 fv-row'>
                           <input

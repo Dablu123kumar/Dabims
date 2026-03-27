@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react'
-import {KTIcon} from '../../_metronic/helpers'
+import {KTIcon, toAbsoluteUrl} from '../../_metronic/helpers'
 import {Link, useNavigate, useParams} from 'react-router-dom'
 import {useAdmissionContext} from '../modules/auth/core/Addmission'
 import moment from 'moment'
@@ -269,9 +269,19 @@ const StudentsList: React.FC<Props> = ({className}) => {
                       </td>
                       <td>
                         <div className='d-flex align-items-center'>
-                          <div className='symbol symbol-45px me-5'>
+                          {
+                            student?.image !== undefined ? (
+                               <div className='symbol symbol-45px me-5'>
                             <img src={`${BASE_URL_Image}/${student?.image}`} alt='' />
                           </div>
+                             )
+                             :(
+
+                          <div className='symbol symbol-45px me-5'>
+                            <img src={`${toAbsoluteUrl('/media/avatars/profile.png')}`} alt='' />
+                          </div>
+                             )
+                          }
                           <div className='d-flex justify-content-start flex-column'>
                             <div
                               onClick={() => navigate(`/profile/student/${student?._id}`)}

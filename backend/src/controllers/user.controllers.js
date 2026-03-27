@@ -164,7 +164,7 @@ export const loginUserController = asyncHandler(async (req, res, next) => {
       to: user.email,
       subject: "Your OTP for Login",
       html: `
-        <h2>Welcome to Reliance Education</h2>
+        <h2>Welcome Back to Our Institute</h2>
         <p>Your OTP for login is: <strong>${otp}</strong></p>
         <p>This OTP will expire in 5 minutes.</p>
         <p>If you did not request this, please ignore this email.</p>

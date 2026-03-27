@@ -192,16 +192,16 @@ const AddMissionForm: React.FC = () => {
         formData.append(key, value as string) // Ensure value is a string, adjust if needed
       })
 
-      if (image === null) {
-        toast.error('Please select a profile picture', {
-          autoClose: 5000,
-          className: 'toast-custom',
-          style: {
-            fontSize: '18px',
-          },
-        })
-        return
-      }
+      // if (image === null) {
+      //   toast.error('Please select a profile picture', {
+      //     autoClose: 5000,
+      //     className: 'toast-custom',
+      //     style: {
+      //       fontSize: '18px',
+      //     },
+      //   })
+      //   return
+      // }
 
       // Append the image to formData
       if (image) {
