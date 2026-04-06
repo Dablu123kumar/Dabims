@@ -25,6 +25,11 @@ const schema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  companyId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Company",
+    default: null,
+  },
 });
 
 const AlertStudentPendingFeesModel = new mongoose.model(

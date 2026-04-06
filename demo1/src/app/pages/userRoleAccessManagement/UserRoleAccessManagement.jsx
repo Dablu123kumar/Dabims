@@ -5,7 +5,7 @@ import {useCompanyContext} from '../compay/CompanyContext'
 import {useAuth} from '../../modules/auth'
 
 const UserRoleAccessManagement = () => {
-  const [selectedRole, setSelectedRole] = useState('SuperAdmin')
+  const [selectedRole, setSelectedRole] = useState('Admin')
   const {currentUser} = useAuth()
   // console.log(currentUser)
   const [permissions, setPermissions] = useState({
@@ -104,24 +104,28 @@ const UserRoleAccessManagement = () => {
             className='form-select form-select-solid form-select-lg'
           >
             {userRoleAccessData?.length > 0 ? (
-              userRoleAccessData?.map((role) => (
-                <>
+              userRoleAccessData
+                ?.filter((role) => {
+                  // Hide SuperAdmin role from Company users
+                  if (currentUser?.role !== 'SuperAdmin' && role.role === 'SuperAdmin') return false
+                  return true
+                })
+                ?.map((role) => (
                   <option value={role.role} key={role._id}>
                     {role.role}
                   </option>
-                </>
-              ))
+                ))
             ) : (
               <>
                 {currentUser?.role === 'SuperAdmin' && (
                   <option value='SuperAdmin'>Super Admin</option>
                 )}
-                <option value='Student'>Student</option>
-                <option value='Telecaller'>Telecaller</option>
+                <option value='Admin'>Admin</option>
                 <option value='Accounts'>Accounts</option>
                 <option value='Counsellor'>Counsellor</option>
+                <option value='Telecaller'>Telecaller</option>
                 <option value='Trainer'>Trainer</option>
-                <option value='Admin'>Admin</option>
+                <option value='Student'>Student</option>
               </>
             )}
           </select>

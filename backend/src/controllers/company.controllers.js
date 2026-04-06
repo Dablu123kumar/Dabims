@@ -6,6 +6,9 @@ import admissionFormModel from "../models/addmission_form.models.js";
 import CourseFeesModel from "../models/courseFees/courseFees.models.js";
 import PaymentInstallmentTimeExpireModel from "../models/NumberInstallmentExpireTime/StudentCourseFeesInstallments.models.js";
 import studentSubjectMarksModel from "../models/subject/student.subject.marks.models.js";
+import { userModel } from "../models/user.models.js";
+import bcryptjs from "bcryptjs";
+import { generateToken } from "../utils/createToken.js";
 
 const __dirname = path.resolve();
 
@@ -58,6 +61,8 @@ export const createCompanyController = asyncHandler(async (req, res, next) => {
       email,
       isGstBased,
       logo: file,
+      isApproved: true,
+      status: "approved",
     });
     const savedCompany = await newCompany.save();
     res.status(200).json(savedCompany);
@@ -69,7 +74,12 @@ export const createCompanyController = asyncHandler(async (req, res, next) => {
 export const getAllCompanyListsController = asyncHandler(
   async (req, res, next) => {
     try {
-      const companies = await CompanyModels.find({});
+      let filter = {};
+      // Non-SuperAdmin users only see their own company
+      if (req.user.role !== "SuperAdmin" && req.user.companyId) {
+        filter._id = req.user.companyId;
+      }
+      const companies = await CompanyModels.find(filter);
       res.status(200).json(companies);
     } catch (error) {
       res.status(500).json({ message: "Error in getting company lists" });
@@ -210,5 +220,122 @@ export const deleteCompanyController = asyncHandler(async (req, res, next) => {
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Error in delete company" });
+  }
+});
+
+// ==================== Company Approval (SuperAdmin only) ====================
+
+export const getPendingCompaniesController = asyncHandler(async (req, res) => {
+  try {
+    const pendingCompanies = await CompanyModels.find({ status: "pending", isApproved: false });
+    res.status(200).json(pendingCompanies);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching pending companies" });
+  }
+});
+
+export const approveCompanyController = asyncHandler(async (req, res) => {
+  try {
+    const company = await CompanyModels.findById(req.params.id);
+    if (!company) {
+      return res.status(404).json({ message: "Company not found" });
+    }
+    company.isApproved = true;
+    company.status = "approved";
+    await company.save();
+    res.status(200).json({ success: true, message: "Company approved successfully", company });
+  } catch (error) {
+    res.status(500).json({ message: "Error approving company" });
+  }
+});
+
+export const rejectCompanyController = asyncHandler(async (req, res) => {
+  try {
+    const company = await CompanyModels.findById(req.params.id);
+    if (!company) {
+      return res.status(404).json({ message: "Company not found" });
+    }
+    company.isApproved = false;
+    company.status = "rejected";
+    await company.save();
+    res.status(200).json({ success: true, message: "Company rejected", company });
+  } catch (error) {
+    res.status(500).json({ message: "Error rejecting company" });
+  }
+});
+
+// Company self-registration (public endpoint)
+export const registerCompanyController = asyncHandler(async (req, res) => {
+  try {
+    const {
+      companyName,
+      email,
+      password,
+      companyPhone,
+      companyAddress,
+      companyWebsite,
+      reciptNumber,
+      gst,
+      isGstBased,
+    } = req.body;
+    const file = req?.file?.filename;
+
+    // Validation
+    if (!file) return res.status(400).json({ error: "Company logo is required" });
+    if (!companyName) return res.status(400).json({ error: "Company name is required" });
+    if (!email) return res.status(400).json({ error: "Email is required" });
+    if (!password) return res.status(400).json({ error: "Password is required" });
+    if (!companyPhone) return res.status(400).json({ error: "Phone is required" });
+    if (!companyAddress) return res.status(400).json({ error: "Address is required" });
+    if (!reciptNumber) return res.status(400).json({ error: "Receipt number is required" });
+    if (!isGstBased) return res.status(400).json({ error: "Is GST Based field is required" });
+
+    // Check if company already exists
+    const existingCompany = await CompanyModels.findOne({ companyName });
+    if (existingCompany) {
+      return res.status(400).json({ error: "Company name already exists" });
+    }
+
+    // Check if email already used by another user
+    const existingUser = await userModel.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ error: "Email already registered" });
+    }
+
+    // Create the company
+    const newCompany = new CompanyModels({
+      companyName,
+      email,
+      companyPhone,
+      companyWebsite: companyWebsite || "",
+      companyAddress,
+      reciptNumber,
+      gst: gst || "",
+      isGstBased,
+      logo: file,
+    });
+    const savedCompany = await newCompany.save();
+
+    // Create the company admin user (account pending approval — no token issued)
+    const hashPassword = await bcryptjs.hash(password, await bcryptjs.genSalt(10));
+    const companyUser = new userModel({
+      fName: companyName,
+      lName: "Admin",
+      email,
+      password: hashPassword,
+      phone: companyPhone,
+      role: "Company",
+      companyId: savedCompany._id,
+    });
+    await companyUser.save();
+
+    res.status(201).json({
+      success: true,
+      pending: true,
+      message: "Registration successful! Your account is pending approval from the owner. You will be able to log in once approved.",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: error.message || "Error registering company" });
   }
 });

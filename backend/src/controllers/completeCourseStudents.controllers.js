@@ -7,8 +7,12 @@ import { userModel } from "../models/user.models.js";
 export const getCourseCompleteStudentsController = asyncHandler(
   async (req, res, next) => {
     try {
-      // Fetch all students from the model
-      const students = await admissionFormModel.find();
+      // Fetch students filtered by company
+      let studentFilter = {};
+      if (req.user && req.user.role !== "SuperAdmin" && req.user.companyId) {
+        studentFilter.companyName = req.user.companyId;
+      }
+      const students = await admissionFormModel.find(studentFilter);
 
       // Filter students who have completed their course
       const filteredStudents = students.filter((student) => {

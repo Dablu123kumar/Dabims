@@ -11,7 +11,11 @@ export const addBatchFormDataController = async (req, res, next) => {
 
 export const getAllBatchesDataController = async (req, res, next) => {
   try {
-    const batches = await batchModel.find({});
+    let filter = {};
+    if (req.user && req.user.role !== "SuperAdmin" && req.user.companyId) {
+      filter.companyId = req.user.companyId;
+    }
+    const batches = await batchModel.find(filter);
     res.status(200).json({ success: true, data: batches });
   } catch (error) {
     res

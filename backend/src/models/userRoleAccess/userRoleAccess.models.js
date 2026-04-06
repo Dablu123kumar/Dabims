@@ -14,7 +14,13 @@ const userRoleAccessSchema = new mongoose.Schema(
         "Trainer",
         "Admin",
         "SuperAdmin",
-      ], // Enum for predefined roles
+        "Company",
+      ],
+    },
+    companyId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Company",
+      default: null,
     },
     companyPermissions: {
       type: Map,

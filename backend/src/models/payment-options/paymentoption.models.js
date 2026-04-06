@@ -4,7 +4,6 @@ const paymentOptionsSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      unique: true,
       default: "Cash",
     },
     date: {
@@ -14,6 +13,11 @@ const paymentOptionsSchema = new mongoose.Schema(
     createdBy: {
       type: String,
       required: true,
+    },
+    companyId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Company",
+      default: null,
     },
   },
   { timestamps: true }

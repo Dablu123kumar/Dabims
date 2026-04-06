@@ -72,12 +72,12 @@ const SidebarMenuMain = () => {
           {/* ----------------------------- Company Menu Start Here ............................... */}
           {companyCTX.getCompanyLists?.data?.map((CompanyListData: any, index: number) => (
             <React.Fragment key={index}>
-              {userRoleAccess?.some(
+              {(userRoleAccess?.some(
                 (userAccess: any) =>
                   (userAccess.role === currentUser?.role &&
                     matchedCompanies[CompanyListData.companyName]) ||
                   currentUser?.role === 'SuperAdmin'
-              ) && (
+              ) || currentUser?.role === 'Company') && (
                 <SidebarMenuItemWithSub
                   key={CompanyListData?._id}
                   to='/apps/chat'
@@ -312,6 +312,17 @@ const SidebarMenuMain = () => {
             >
               <SidebarMenuItem to='/company' title='Company' hasBullet={true} />
               <SidebarMenuItem to='/add-company' title='Add Company' hasBullet={true} />
+              {currentUser?.role === 'SuperAdmin' && (
+                <SidebarMenuItem
+                  to='/pending-companies'
+                  hasBullet={true}
+                  title={
+                    (companyCTX.getPendingCompaniesQuery?.data?.length ?? 0) > 0
+                      ? `Pending Approvals (${companyCTX.getPendingCompaniesQuery?.data?.length})`
+                      : 'Pending Approvals'
+                  }
+                />
+              )}
             </SidebarMenuItemWithSub>
           ) : (
             ''
@@ -346,7 +357,7 @@ const SidebarMenuMain = () => {
                 title='User management'
                 hasBullet={true}
               />
-              {currentUser?.role === 'SuperAdmin' && (
+              {(currentUser?.role === 'SuperAdmin' || currentUser?.role === 'Company') && (
                 <SidebarMenuItem
                   to='/apps/user-role/management'
                   title='User Access'
@@ -356,6 +367,16 @@ const SidebarMenuMain = () => {
             </SidebarMenuItemWithSub>
           ) : (
             ''
+          )}
+
+          {/* Staff Management - visible to Company Admin and SuperAdmin */}
+          {(currentUser?.role === 'Company' || currentUser?.role === 'SuperAdmin') && (
+            <SidebarMenuItem
+              to='/staff-management'
+              icon='people'
+              title='Staff Management'
+              fontIcon='bi-people'
+            />
           )}
         </>
       ) : (

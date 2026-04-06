@@ -7,22 +7,27 @@ import { toast } from 'react-toastify'
 const AdmissionContext = createContext()
 const BASE_URL = process.env.REACT_APP_BASE_URL
 
+const getSelectedCompanyId = () => {
+  try { return JSON.parse(localStorage.getItem('selectedCompany') || '{}')?._id || '' } catch(e) { return '' }
+}
+
 export const AdmissionContextProvider = ({ children }) => {
   const [studentId, setStudentId] = useState('')
   const queryClient = useQueryClient()
-  let { auth } = useAuth()
+  let { auth, currentUser } = useAuth()
   const [admissionFormData, setAdmissionFormData] = useState([])
   let config = {
     headers: {
       Authorization: `Bearer ${auth?.api_token}`,
     },
   }
-
   const studentsLists = useQuery({
     queryKey: ['getStudents'],
     queryFn: async () => {
       try {
-        const response = await axios.get(`${BASE_URL}/api/students`, config)
+        const cId = currentUser?.role === 'SuperAdmin' ? getSelectedCompanyId() : ''
+        const url = cId ? `${BASE_URL}/api/students?companyId=${cId}` : `${BASE_URL}/api/students`
+        const response = await axios.get(url, config)
         return response.data
       } catch (error) {
         throw new Error('Error fetching student data: ' + error.message)
@@ -153,20 +158,19 @@ export const AdmissionContextProvider = ({ children }) => {
   // update Student
   const updateStudentMutation = useMutation({
     mutationFn: async (updateStudent) => {
-      //console.log('updatedata',updateStudent)
       let id = updateStudent.get('id')
-      return axios
-        .put(`${BASE_URL}/api/students/${id}`, updateStudent, config) // Corrected order of arguments
-        .then((res) => {
-          //console.log('response',res)
-          if(res.status === 200){
-            toast.success(`Student Updated Successfully`)
-            return {
-              student : res.data,
-              oldCourse : updateStudent.get('oldCourse'),
-            }
-          }
-        })
+      console.log('DEBUG MUTATION: calling PUT /api/students/' + id)
+      try {
+        const res = await axios.put(`${BASE_URL}/api/students/${id}`, updateStudent, config)
+        console.log('DEBUG MUTATION: response status', res.status, 'data:', res.data)
+        return {
+          student: res.data,
+          oldCourse: updateStudent.get('oldCourse'),
+        }
+      } catch (err) {
+        console.error('DEBUG MUTATION: PUT failed', err.response?.status, err.response?.data || err.message)
+        throw err
+      }
     },
 
     onSuccess: async (res,variables) =>{

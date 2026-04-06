@@ -4,7 +4,6 @@ import UserRoleAccessModel from "../models/userRoleAccess/userRoleAccess.models.
 export const addUserRolePermissionAccessController = asyncHandler(
   async (req, res, next) => {
     try {
-      // console.log(req.body);
       const {
         role,
         companyPermissions,
@@ -12,8 +11,16 @@ export const addUserRolePermissionAccessController = asyncHandler(
         studentFeesAccess,
       } = req.body;
 
-      // Check if the role already exists in the database
-      const existingRoleAccess = await UserRoleAccessModel.findOne({ role });
+      const userCompanyId = req.user?.companyId || null;
+
+      // Check if the role already exists for this company
+      const findQuery = { role };
+      if (userCompanyId) {
+        findQuery.companyId = userCompanyId;
+      } else {
+        findQuery.companyId = null;
+      }
+      const existingRoleAccess = await UserRoleAccessModel.findOne(findQuery);
 
       if (existingRoleAccess) {
         // Update the existing role access with new permissions
@@ -37,6 +44,7 @@ export const addUserRolePermissionAccessController = asyncHandler(
         // If the role does not exist, create a new one
         const roleAccess = new UserRoleAccessModel({
           role,
+          companyId: userCompanyId,
           companyPermissions,
           studentControlAccess,
           studentFeesAccess,
@@ -56,8 +64,11 @@ export const addUserRolePermissionAccessController = asyncHandler(
 export const getAllUserAccessRoleDataController = asyncHandler(
   async (req, res, next) => {
     try {
-      // console.log(req.body);
-      const allRoles = await UserRoleAccessModel.find({});
+      let filter = {};
+      if (req.user && req.user.role !== "SuperAdmin" && req.user.companyId) {
+        filter.companyId = req.user.companyId;
+      }
+      const allRoles = await UserRoleAccessModel.find(filter);
       return res.status(200).json({ success: true, roleAccessData: allRoles });
     } catch (error) {
       console.error(error); // Added for better error tracking

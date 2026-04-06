@@ -7,6 +7,7 @@ import * as Yup from 'yup'
 import {useFormik} from 'formik'
 import {useMutation} from 'react-query'
 import {toast} from 'react-toastify'
+import {useAuth} from '../modules/auth'
 
 const addUserSchema = Yup.object().shape({
   fName: Yup.string().required('First name is required'),
@@ -20,6 +21,8 @@ const addUserSchema = Yup.object().shape({
 const BASE_URL = process.env.REACT_APP_BASE_URL
 
 const AddUser: React.FC = () => {
+  const {currentUser} = useAuth()
+  const isSuperAdmin = currentUser?.role === 'SuperAdmin'
   const [data, setData] = useState<addUser>(addUserInitialValues)
   //console.log(data)
 
@@ -202,7 +205,7 @@ const AddUser: React.FC = () => {
                   <option value='Telecaller'>Telecaller</option>
                   <option value='Accounts'>Accounts</option>
                   <option value='Student'>Student</option>
-                  <option value='SuperAdmin'>SuperAdmin</option>
+                  {isSuperAdmin && <option value='SuperAdmin'>SuperAdmin</option>}
                 </select>
                 {formik.touched.role && formik.errors.role && (
                   <div className='fv-plugins-message-container'>

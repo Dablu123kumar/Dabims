@@ -8,11 +8,16 @@ const BASE_URL_Image = `${BASE_URL}/api/images`
 
 const CompleteCourseStudents = () => {
   const studentCTX = useAdmissionContext();
-  const {getCompleteCourseStudentsLists} =  useAdmissionContext()
-  const filteredStudents = studentCTX.getCompleteCourseStudentsLists?.data
-// console.log('comst',getCompleteCourseStudentsLists)
-// console.log('filtst',filteredStudents)     
   const companyCtx = useCompanyContext();
+  const {selectedCompany} = companyCtx;
+  const allCompleteCourseStudents = studentCTX.getCompleteCourseStudentsLists?.data || []
+  // Filter by selected company (companyName is the company ObjectId ref on students)
+  const filteredStudents = selectedCompany?._id
+    ? allCompleteCourseStudents.filter((s) => {
+        const studentCompanyId = typeof s?.companyName === 'object' ? s?.companyName?._id : s?.companyName
+        return studentCompanyId === selectedCompany._id || !studentCompanyId
+      })
+    : allCompleteCourseStudents;
 
   const getSingleCompanyOfStudent = (companyId) => {
     let data = companyCtx.getCompanyLists.data.find(companyData => companyData?._id === companyId)

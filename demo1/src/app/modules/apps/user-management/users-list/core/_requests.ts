@@ -9,11 +9,15 @@ const USER_URL = `${API_URL}/user`
 // const GET_USERS_URL = `${API_URL}/users/query`
 const GET_USERS_URL = ``
 
-const getUsers = async (query: string): Promise<UsersQueryResponse> => {
-  // console.log(query);
+const getSelectedCompanyId = (): string => {
+  try { return JSON.parse(localStorage.getItem('selectedCompany') || '{}')?._id || '' } catch(e) { return '' }
+}
 
+const getUsers = async (query: string): Promise<UsersQueryResponse> => {
+  const companyId = getSelectedCompanyId()
+  const companyQuery = companyId ? `&companyId=${companyId}` : ''
   return axios
-    .get(`${BASE_URL}/api/users?${query}`)
+    .get(`${BASE_URL}/api/users?${query}${companyQuery}`)
     .then((d: AxiosResponse<UsersQueryResponse>) => d.data)
 }
 

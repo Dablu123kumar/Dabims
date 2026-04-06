@@ -27,8 +27,8 @@ const otpSchema = Yup.object().shape({
 })
 
 const initialValues = {
-  email: 'rahul@gmail.com',
-  password: '233124312423',
+  email: '',
+  password: '',
 }
 
 const otpInitialValues = {
@@ -346,12 +346,12 @@ export function Login() {
       </div>
       {/* end::Action */}
 
-      {/* <div className='text-gray-500 text-center fw-semibold fs-6 '>
-        Not a Member yet?{' '}
-        <Link to='/auth/registration' className='link-primary'>
-          Sign up
+      <div className='text-gray-500 text-center fw-semibold fs-6'>
+        Want to register your company?{' '}
+        <Link to='/auth/company-register' className='link-primary'>
+          Register Company
         </Link>
-      </div> */}
+      </div>
     </form>
   )
 }

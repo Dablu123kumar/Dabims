@@ -60,7 +60,7 @@ export const PaymentOptionContextProvider = ({children}) => {
       return axios.delete(`${BASE_URL}/api/paymentOptions/${id}`, config).then((res) => res.data)
     },
     onSuccess: () => {
-      toast.error('Payment Option  deleted successfully')
+      toast.success('Payment Option deleted successfully')
     },
     onSettled: async (_, error) => {
       if (error) {

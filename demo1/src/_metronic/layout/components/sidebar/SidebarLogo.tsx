@@ -4,6 +4,10 @@ import {KTIcon, toAbsoluteUrl} from '../../../helpers'
 import {useLayout} from '../../core'
 import {MutableRefObject, useEffect, useRef} from 'react'
 import {ToggleComponent} from '../../../assets/ts/components'
+import {useAuth} from '../../../../app/modules/auth'
+import {useCompanyContext} from '../../../../app/pages/compay/CompanyContext'
+
+const BASE_URL = process.env.REACT_APP_BASE_URL
 
 type PropsType = {
   sidebarRef: MutableRefObject<HTMLDivElement | null>
@@ -12,6 +16,25 @@ type PropsType = {
 const SidebarLogo = (props: PropsType) => {
   const {config} = useLayout()
   const toggleRef = useRef<HTMLDivElement>(null)
+  const {currentUser} = useAuth()
+  const companyCTX = useCompanyContext()
+
+  // Get the logged-in company's logo
+  const companyList = companyCTX?.getCompanyLists?.data
+  let companyLogo: string | null = null
+  if (
+    currentUser?.role !== 'SuperAdmin' &&
+    currentUser?.role !== 'Student' &&
+    companyList?.length > 0
+  ) {
+    // For Company/Staff roles, show their company's logo
+    const userCompany = currentUser?.companyId
+      ? companyList.find((c: any) => c._id === currentUser.companyId)
+      : companyList[0]
+    if (userCompany?.logo) {
+      companyLogo = `${BASE_URL}/api/images/${userCompany.logo}`
+    }
+  }
 
   const appSidebarDefaultMinimizeDesktopEnabled =
     config?.app?.sidebar?.default?.minimize?.desktop?.enabled
@@ -50,32 +73,50 @@ const SidebarLogo = (props: PropsType) => {
   return (
     <div className='app-sidebar-logo px-6' id='kt_app_sidebar_logo'>
       <Link to='/dashboard'>
-        {config.layoutType === 'dark-sidebar' ? (
-          <img
-            alt='Logo'
-            src={toAbsoluteUrl('/media/logos/default-dark.svg')}  
-            className='h-30px app-sidebar-logo-default'
-          />
-        ) : (
+        {companyLogo ? (
           <>
             <img
-              alt='Logo'
-              src={toAbsoluteUrl('/media/logos/default-dark.svg')}
-              className='h-30px app-sidebar-logo-default theme-light-show'
+              alt='Company Logo'
+              src={companyLogo}
+              className='h-30px app-sidebar-logo-default'
+              style={{objectFit: 'contain', maxWidth: '150px'}}
             />
             <img
+              alt='Company Logo'
+              src={companyLogo}
+              className='h-20px app-sidebar-logo-minimize'
+              style={{objectFit: 'contain'}}
+            />
+          </>
+        ) : (
+          <>
+            {config.layoutType === 'dark-sidebar' ? (
+              <img
+                alt='Logo'
+                src={toAbsoluteUrl('/media/logos/default-dark.svg')}
+                className='h-30px app-sidebar-logo-default'
+              />
+            ) : (
+              <>
+                <img
+                  alt='Logo'
+                  src={toAbsoluteUrl('/media/logos/default-dark.svg')}
+                  className='h-30px app-sidebar-logo-default theme-light-show'
+                />
+                <img
+                  alt='Logo'
+                  src={toAbsoluteUrl('/media/logos/default-dark.svg')}
+                  className='h-25px app-sidebar-logo-default theme-dark-show'
+                />
+              </>
+            )}
+            <img
               alt='Logo'
-              src={toAbsoluteUrl('/media/logos/default-dark.svg')}
-              className='h-25px app-sidebar-logo-default theme-dark-show'
+              src={toAbsoluteUrl('/media/logos/default-small.svg')}
+              className='h-20px app-sidebar-logo-minimize'
             />
           </>
         )}
-
-        <img
-          alt='Logo'
-          src={toAbsoluteUrl('/media/logos/default-small.svg')}
-          className='h-20px app-sidebar-logo-minimize'
-        />
       </Link>
 
       {(appSidebarDefaultMinimizeDesktopEnabled || appSidebarDefaultCollapseDesktopEnabled) && (

@@ -1,17 +1,24 @@
 import React from 'react'
 import {KTIcon} from '../../../_metronic/helpers'
 import {useCustomFormFieldContext} from '../enquiry-related/dynamicForms/CustomFormFieldDataContext'
+import {useCompanyContext} from '../compay/CompanyContext'
+import {useAuth} from '../../modules/auth'
 import moment from 'moment'
 
 const TodayTasks = ({className}) => {
   const studentNotesCTX = useCustomFormFieldContext()
+  const {selectedCompany} = useCompanyContext()
+  const {currentUser} = useAuth()
   const studentData = studentNotesCTX?.getStudentNotesListsQuery?.data?.allStudentNotes
 
-  // Get today's date (start of the day to ignore the time part)
   const today = moment().startOf('day')
 
-  // Filter today's tasks: Ensure task date matches today's date
-  const todaysTasks = studentData?.filter((task) => moment(task.startTime).isSame(today, 'day'))
+  const todaysTasks = studentData?.filter((task) => {
+    if (!moment(task.startTime).isSame(today, 'day')) return false
+    if (!selectedCompany?._id) return true
+    if (currentUser?.role === 'SuperAdmin') return !task?.companyId || task.companyId === selectedCompany._id
+    return task?.companyId === selectedCompany._id
+  })
 
   return (
     <div className={`card card-xl-stretch mb-5 mb-xl-8 ${className}`}>

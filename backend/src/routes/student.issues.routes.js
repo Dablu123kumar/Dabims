@@ -13,13 +13,15 @@ import {
 
 const router = Router();
 
-router.post("/showStudentDashboard", showStudentIssueOnDashboardController);
+router.post("/showStudentDashboard", requireSignIn, showStudentIssueOnDashboardController);
 router.get(
   "/showStudentDashboard",
+  requireSignIn,
   getAllShowStudentIssueOnDashboardController
 );
 router.get(
   "/showStudentDashboard/:id",
+  requireSignIn,
   getSingleStudentShowStudentIssueOnDashboardController
 );
 

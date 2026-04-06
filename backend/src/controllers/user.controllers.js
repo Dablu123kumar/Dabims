@@ -8,9 +8,11 @@ import {
   BACKEND_URL,
   FRONTEND_URL,
   JWT_SECRET,
+  NODE_ENV,
   USER_EMAIL,
 } from "../config/config.js";
 import { mailTransporter } from "../utils/mail_helpers.js";
+import CompanyModels from "../models/company/company.models.js";
 
 // add user controller
 export const addUsersControllers = asyncHandler(async (req, res, next) => {
@@ -44,6 +46,16 @@ export const addUsersControllers = asyncHandler(async (req, res, next) => {
       await bcryptjs.genSalt(10)
     );
 
+    // Determine companyId for the new user
+    // SuperAdmin can pass an explicit companyId via body; everyone else inherits from their own companyId
+    let assignedCompanyId = null;
+    if (req.user.role === "SuperAdmin") {
+      assignedCompanyId = req.body.companyId || null;
+    } else if (req.user.companyId) {
+      // Any non-SuperAdmin creator (Company, Admin, Counsellor, etc.) passes their companyId down
+      assignedCompanyId = req.user.companyId;
+    }
+
     let user = new userModel({
       fName,
       lName,
@@ -51,9 +63,8 @@ export const addUsersControllers = asyncHandler(async (req, res, next) => {
       password: hashPassword,
       phone,
       role,
+      companyId: assignedCompanyId,
     });
-    let token = generateToken(res, user._id);
-    user.api_token = token;
     await user.save();
     // If all validations pass and user is saved, send a success response
     res.status(201).json({ message: "User created successfully!" });
@@ -148,7 +159,43 @@ export const loginUserController = asyncHandler(async (req, res, next) => {
       throw new Error("Wrong credentials");
     }
 
-    // Generate OTP
+    // Block login for unapproved Company accounts
+    if (user.role === "Company" && user.companyId) {
+      const company = await CompanyModels.findById(user.companyId);
+      if (company && !company.isApproved) {
+        const statusMsg = company.status === "rejected"
+          ? "Your company registration has been rejected. Please contact the owner."
+          : "Your company account is pending approval. Please wait for the owner to activate your account.";
+        return res.status(403).json({ success: false, message: statusMsg });
+      }
+    }
+
+    // In development mode, skip OTP and login directly
+    if (NODE_ENV === "development") {
+      const token = generateToken(res, user._id);
+      user.api_token = token;
+      user.isOtpVerified = true;
+      await user.save();
+
+      const expiresAt = Date.now() + 60 * 60 * 1000;
+      return res.status(200).json({
+        success: true,
+        message: "Login successful!",
+        _id: user._id,
+        first_name: user.fName,
+        role: user.role,
+        email: user.email,
+        api_token: token,
+        expiresAt: expiresAt,
+        last_name: user.lName,
+        companyId: user.companyId || null,
+        requiresOTP: false,
+        email_verified_at: user.createdAt,
+        updated_at: user.updatedAt,
+      });
+    }
+
+    // Production mode: Generate and send OTP
     const otp = generateOTP();
     const otpExpiresAt = getOTPExpirationTime();
 
@@ -246,6 +293,7 @@ export const verifyOTPAndLoginController = asyncHandler(async (req, res, next) =
       api_token: token,
       expiresAt: expiresAt,
       last_name: user.lName,
+      companyId: user.companyId || null,
       email_verified_at: user.createdAt,
       updated_at: user.updatedAt,
     });
@@ -325,6 +373,7 @@ export const getUserByTokn = asyncHandler(async (req, res, next) => {
       updated_at: user.createdAt,
       role: user.role,
       studentId: user.studentId || null,
+      companyId: user.companyId || null,
       api_token: user.api_token,
     });
   } catch (error) {
@@ -423,7 +472,24 @@ export const getAllUsersController = asyncHandler(async (req, res, next) => {
     const skip = (parseInt(page) - 1) * parseInt(items_per_page);
     const limit = parseInt(items_per_page);
 
-    // Build the search query
+    // Build the search query with multi-tenant filtering
+    const companyFilter = {};
+    if (req.query.companyId) {
+      // SuperAdmin filtering by company: show matched + legacy (null companyId)
+      if (req.user.role === "SuperAdmin") {
+        companyFilter.$or = [
+          { companyId: req.query.companyId },
+          { companyId: null },
+        ];
+      } else {
+        companyFilter.companyId = req.query.companyId;
+      }
+    } else if (req.user.role !== "SuperAdmin") {
+      if (req.user.companyId) {
+        companyFilter.companyId = req.user.companyId;
+      }
+    }
+
     const searchQuery = {
       ...(search
         ? {
@@ -431,11 +497,11 @@ export const getAllUsersController = asyncHandler(async (req, res, next) => {
               { fName: new RegExp(search, "i") },
               { lName: new RegExp(search, "i") },
               { email: new RegExp(search, "i") },
-              // Add more fields as needed
             ],
           }
         : {}),
-      role: { $ne: "student" }, // Exclude users with the role "student"
+      role: { $ne: "Student" },
+      ...companyFilter,
     };
 
     // Use the skip and limit values in your MongoDB query to implement pagination
@@ -449,6 +515,7 @@ export const getAllUsersController = asyncHandler(async (req, res, next) => {
         email: user?.email,
         role: user?.role,
         phone: user?.phone,
+        companyId: user?.companyId || null,
       };
     });
 
@@ -511,17 +578,14 @@ export const editUserController = asyncHandler(async (req, res, next) => {
       return res.status(404).json({ error: "User not found." });
     }
 
-    // Check if the user performing the update is either SuperAdmin or the same user
+    // Check if the user performing the update has permission
     const isSuperAdmin = req.user.role === "SuperAdmin";
-    const isSelf = req.user._id.toString() === req.params.id;
-    const isAdminEditingSelf = isSelf && req.user.role === "Admin";
-    // Check if the user performing the update is either SuperAdmin or the same user
-    if (req.user.role === "SuperAdmin") {
-      // SuperAdmin can update anyone, Admin can update non-SuperAdmin users
-      if (req.user.role !== "SuperAdmin") {
-        return res
-          .status(400)
-          .json({ error: "Cannot update SuperAdmin user." });
+    const isCompanyAdmin = req.user.role === "Company";
+
+    if (isSuperAdmin || isCompanyAdmin) {
+      // Company admin can only edit users in their own company
+      if (isCompanyAdmin && user.companyId?.toString() !== req.user.companyId?.toString()) {
+        return res.status(403).json({ error: "You can only edit users in your own company." });
       }
 
       let hashPassword = password
@@ -571,9 +635,13 @@ export const deleteUserController = asyncHandler(async (req, res, next) => {
     let user = await userModel.findById(userId);
     if (user.role === "SuperAdmin") {
       res.status(404).json({
-        message: "You can delete Super Admin",
+        message: "You cannot delete Super Admin",
       });
       return;
+    }
+    // Company admin can only delete users in their own company
+    if (req.user.role === "Company" && user.companyId?.toString() !== req.user.companyId?.toString()) {
+      return res.status(403).json({ message: "You can only delete users in your own company" });
     }
     await userModel.findByIdAndDelete(userId);
     res.status(200).json({
@@ -620,6 +688,7 @@ export const getUserByIdController = asyncHandler(async (req, res, next) => {
         email: user.email,
         role: user.role,
         phone: user.phone,
+        companyId: user.companyId || null,
       },
     });
   } catch (error) {

@@ -30,7 +30,11 @@ export const addStudentNotesController = async (req, res, next) => {
 
 export const getAllStudentNotesController = async (req, res, next) => {
   try {
-    const allStudentNotes = await studentNotesModel.find({});
+    let filter = {};
+    if (req.user && req.user.role !== "SuperAdmin" && req.user.companyId) {
+      filter.companyId = req.user.companyId;
+    }
+    const allStudentNotes = await studentNotesModel.find(filter);
     res.status(200).json({ success: true, allStudentNotes });
   } catch (error) {
     res

@@ -26,7 +26,7 @@ const addmissionFormSchema = Yup.object().shape({
   present_address: Yup.string().required('Present Address is required!'),
   //permanent_address: Yup.string().required('Permanent Address is required!'),
   date_of_birth: Yup.string().required('Date of birth is required!'),
-  courseduration: Yup.string(),
+  courseduration: Yup.string().nullable(),
   city: Yup.string().required('city is required!'),
   email: Yup.string().required('email is required!'),
   // student_status: Yup.string().required('Student status is required!'),
@@ -46,10 +46,10 @@ const addmissionFormSchema = Yup.object().shape({
   //remainingCourseFees: Yup.string().required('Remaining CourseFees is required!'),
 
   date_of_joining: Yup.string().required('Date of joining is required!'),
-  installment_duration: Yup.string().required('Installment Duration is required!'),
+  installment_duration: Yup.string().nullable(),
   no_of_installments: Yup.string(),
   no_of_installments_amount: Yup.string(),
-  message: Yup.string().required('Please write message why you are changing!'),
+  message: Yup.string(),
 })
 
 const UpdateAddmission = () => {
@@ -227,15 +227,32 @@ const UpdateAddmission = () => {
 
       if (updateUserId) {
         formData.append('id', updateUserId?._id)
-        // formData.append('course name id ', updateUserId?.courseName._id)
         formData.append('courseName', selectedCourseId)
         formData.append('oldCourse', oldCourse)
 
-        const res = context.updateStudentMutation.mutate(formData)
-        //console.log('res',res)
+        // Require message when course is changed
+        const courseChanged = values.select_course && values.select_course !== oldCourse
+        if (courseChanged && (!values.message || !values.message.trim())) {
+          toast.error('Please write a message explaining why you are changing the course!')
+          setLoading(false)
+          return
+        }
+
+        console.log('DEBUG: Updating student', updateUserId?._id, 'with fields:', Object.fromEntries(formData.entries()))
+        try {
+          await context.updateStudentMutation.mutateAsync(formData)
+          console.log('DEBUG: Student update SUCCESS')
+          toast.success('Student updated successfully')
+        } catch (err) {
+          console.error('DEBUG: Student update FAILED', err)
+          toast.error('Failed to update student: ' + (err?.response?.data?.message || err?.message || 'Unknown error'))
+          setLoading(false)
+          return
+        }
         setLoading(true)
       } else {
         formData.append('courseName', selectedCourseId)
+        console.log('DEBUG: Creating student with fields:', Object.fromEntries(formData.entries()))
         context.createStudentMutation.mutate(formData)
         setLoading(true)
       }

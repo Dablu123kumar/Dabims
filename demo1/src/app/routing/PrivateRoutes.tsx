@@ -9,6 +9,7 @@ import {WithChildren} from '../../_metronic/helpers'
 import BuilderPageWrapper from '../pages/layout-builder/BuilderPageWrapper'
 import {useAuth} from '../modules/auth'
 import {useAdmissionContext} from '../modules/auth/core/Addmission'
+import StaffManagement from '../pages/staff-management/StaffManagement'
 import UpdateAddmission from '../pages/UpdateAddmission'
 import WhatsappMessageSuggestion from '../pages/email-template/WhatsappMessageSuggestion'
 import PendingFeesStudents from '../pages/student-with-feesClear-and-remaining/PendingFeesStudents'
@@ -23,6 +24,7 @@ import AddAccountDayBook from '../pages/dayBook/AddAccountDayBook'
 import UpdateCompany from '../pages/compay/UpdateCompany'
 import AddCompany from '../pages/compay/AddCompany'
 import Company from '../pages/compay/Company'
+import PendingCompanies from '../pages/compay/PendingCompanies'
 import ProfilePage from '../modules/profile/ProfilePage'
 import WizardsPage from '../modules/wizards/WizardsPage'
 import AccountPage from '../modules/accounts/AccountPage'
@@ -394,6 +396,14 @@ const PrivateRoutes = () => {
                 </>
               }
             />
+            <Route
+              path='/pending-companies'
+              element={
+                <>
+                  <PendingCompanies />
+                </>
+              }
+            />
             {/* ******************************................ Manage Company End here..............******************************************* */}
             {/* ------------------------------- Email Template Start ----------------------------------- */}
             <Route
@@ -491,6 +501,7 @@ const PrivateRoutes = () => {
                 </>
               }
             />
+            <Route path='/staff-management' element={<StaffManagement />} />
             {/* <Route path='*' element={<Navigate to='/error/404' />} /> */}
           </>
         ) : (

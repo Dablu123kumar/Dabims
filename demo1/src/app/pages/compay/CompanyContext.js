@@ -116,6 +116,57 @@ export const CompanyContextProvider = ({children}) => {
     },
   })
 
+  // Pending companies list (SuperAdmin only)
+  const getPendingCompaniesQuery = useQuery({
+    queryKey: ['getPendingCompanies'],
+    queryFn: async () => {
+      try {
+        const response = await axios.get(`${BASE_URL}/api/company/pending`, config)
+        return response.data
+      } catch (error) {
+        throw new Error('Error fetching pending companies: ' + error.message)
+      }
+    },
+  })
+
+  // Approve company (SuperAdmin only)
+  const approveCompanyMutation = useMutation({
+    mutationFn: async (id) => {
+      const res = await axios.patch(`${BASE_URL}/api/company/${id}/approve`, {}, config)
+      return res.data
+    },
+    onSuccess: () => {
+      toast('Company approved successfully!', { type: 'success', bodyStyle: { fontSize: '18px' } })
+    },
+    onSettled: async (_, error) => {
+      if (error) {
+        toast(error?.response?.data?.message || 'Error approving company', { type: 'error', bodyStyle: { fontSize: '18px' } })
+      } else {
+        await queryClient.invalidateQueries({ queryKey: ['getPendingCompanies'] })
+        await queryClient.invalidateQueries({ queryKey: ['getCompanyLists'] })
+      }
+    },
+  })
+
+  // Reject company (SuperAdmin only)
+  const rejectCompanyMutation = useMutation({
+    mutationFn: async (id) => {
+      const res = await axios.patch(`${BASE_URL}/api/company/${id}/reject`, {}, config)
+      return res.data
+    },
+    onSuccess: () => {
+      toast('Company rejected.', { type: 'warning', bodyStyle: { fontSize: '18px' } })
+    },
+    onSettled: async (_, error) => {
+      if (error) {
+        toast(error?.response?.data?.message || 'Error rejecting company', { type: 'error', bodyStyle: { fontSize: '18px' } })
+      } else {
+        await queryClient.invalidateQueries({ queryKey: ['getPendingCompanies'] })
+        await queryClient.invalidateQueries({ queryKey: ['getCompanyLists'] })
+      }
+    },
+  })
+
   // update Course type
   const updateCompanyMutation = useMutation({
     mutationFn: async (updateData) => {
@@ -738,8 +789,25 @@ export const CompanyContextProvider = ({children}) => {
   useEffect(()=>{
     if(selectedCompany){
       localStorage.setItem('selectedCompany',JSON.stringify(selectedCompany))
+      // Invalidate all data queries so they re-fetch with new company filter
+      queryClient.invalidateQueries()
     }
   },[selectedCompany])
+
+  // Auto-select first company for all roles (except Student)
+  useEffect(()=>{
+    if(
+      auth &&
+      getCompanyLists?.data?.length > 0 &&
+      !selectedCompany
+    ){
+      const authData = JSON.parse(localStorage.getItem('kt-auth-react-v') || '{}')
+      const role = authData?.role
+      if(role && role !== 'Student'){
+        setSelectedCompany(getCompanyLists.data[0])
+      }
+    }
+  },[getCompanyLists?.data, auth])
 
 
 
@@ -754,6 +822,9 @@ export const CompanyContextProvider = ({children}) => {
         useGetSingleCompanyData,
         deleteCompanyMutation,
         updateCompanyMutation,
+        getPendingCompaniesQuery,
+        approveCompanyMutation,
+        rejectCompanyMutation,
         postEmailRemainderText,
         postEmailRemainderDays,
         postEmailSuggestionStatus,

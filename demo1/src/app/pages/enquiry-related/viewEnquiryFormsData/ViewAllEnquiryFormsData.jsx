@@ -603,7 +603,10 @@ export default function ViewAllEnquiryFormsData() {
         {/* Select Dropdown for Created/Updated */}
         <div className='d-flex justify-content-end w-100 gap-5 align-items-center '>
           <div>
-            <Link to={`/add-enquiry/${companyId}`} className='border'>Add Enquiry</Link>
+            <Link to={`/add-enquiry/${companyId}`} className='btn btn-sm btn-primary'>
+              <KTIcon iconName='plus' className='fs-3' />
+              Add Enquiry
+            </Link>
           </div>
           <select
             className='form-select form-select-sm w-auto'

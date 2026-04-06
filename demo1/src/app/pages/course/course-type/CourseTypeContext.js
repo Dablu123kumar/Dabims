@@ -7,20 +7,25 @@ import {toast} from 'react-toastify'
 const BASE_URL = process.env.REACT_APP_BASE_URL
 const CourseTypesContext = createContext()
 
+const getSelectedCompanyId = () => {
+  try { return JSON.parse(localStorage.getItem('selectedCompany') || '{}')?._id || '' } catch(e) { return '' }
+}
+
 export const CourseTypesContextProvider = ({children}) => {
   const queryClient = useQueryClient()
-  const {auth} = useAuth()
+  const {auth, currentUser} = useAuth()
   let config = {
     headers: {
       Authorization: `Bearer ${auth?.api_token}`,
     },
   }
-
   const courseTypesLists = useQuery({
     queryKey: ['getCourseTypes'],
     queryFn: async () => {
       try {
-        const response = await axios.get(`${BASE_URL}/api/courses/courseType`, config)
+        const cId = currentUser?.role === 'SuperAdmin' ? getSelectedCompanyId() : ''
+        const url = cId ? `${BASE_URL}/api/courses/courseType?companyId=${cId}` : `${BASE_URL}/api/courses/courseType`
+        const response = await axios.get(url, config)
         return response.data
       } catch (error) {
         throw new Error('Error fetching student data: ' + error.message)

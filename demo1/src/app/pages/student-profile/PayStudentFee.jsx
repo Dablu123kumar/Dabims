@@ -31,18 +31,8 @@ const PayStudentFee = ({
       installmentDuration.setHours(0, 0, 0, 0)
       amountDate.setHours(0, 0, 0, 0)
 
-      // Check if the payment is for the current month
-      const isCurrentMonthPayment =
-        amountDate.getFullYear() === installmentDuration.getFullYear() &&
-        amountDate.getMonth() === installmentDuration.getMonth()
-
-      // Calculate the difference in days
-      let overdueDays = 0
-      if (isCurrentMonthPayment) {
-        // If payment is for the current month, calculate overdue days from installment duration
-        overdueDays = Math.ceil((amountDate - installmentDuration) / (1000 * 60 * 60 * 24))
-      }
-
+      // Calculate overdue days: any payment after due date incurs late fees
+      const overdueDays = Math.ceil((amountDate - installmentDuration) / (1000 * 60 * 60 * 24))
       const lateFees = overdueDays > 0 ? overdueDays * 100 : 0
 
       setPayStudentFeesAdd((prev) => ({...prev, lateFees}))

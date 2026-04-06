@@ -13,13 +13,13 @@ const CompanyCollectionDashboardBox = ({
   chartLine = 11,
   chartRotate = 145,
 }) => {
-  // ✅ HOOKS FIRST — ALWAYS
   const chartRef = useRef(null)
   const {mode} = useThemeMode()
   const {selectedCompany} = useCompanyContext()
   const paymentCtx = usePaymentOptionContextContext()
 
   const companyId = selectedCompany?._id
+  const displayName = selectedCompany?.companyName
   const daybookData = paymentCtx?.getDayBookDataQuery?.data || []
 
   // ✅ SAFE useMemo (always runs)
@@ -142,7 +142,7 @@ const CompanyCollectionDashboardBox = ({
               {Math.abs(profitLossPercentage).toFixed(2)}%
             </span>
           </div>
-          <span className='text-gray-400 pt-1 fw-semibold fs-6'>Over All Earnings Of {selectedCompany?.companyName} </span>
+          <span className='text-gray-400 pt-1 fw-semibold fs-6'>Earnings Of {displayName || 'Company'} </span>
         </div>
       </div>
 

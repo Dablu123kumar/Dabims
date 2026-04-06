@@ -2016,13 +2016,20 @@ export const deleteSingleStudentCourseFeesController = asyncHandler(
 export const getAllCourseFeesController = asyncHandler(
 	async (req, res, next) => {
 		try {
-			// const allCourseFees = await CourseFeesModel.find({})
-			//   .populate(["studentInfo", "courseName"])
-			//   .sort("courseName");
-			const nextInstallmentCourseFees = await CourseFeesModel.find({}).populate(
+			// Multi-tenant filter
+			let filter = {};
+			if (req.query.companyId) {
+				if (req.user?.role === "SuperAdmin") {
+					filter.$or = [{ companyName: req.query.companyId }, { companyName: null }];
+				} else {
+					filter.companyName = req.query.companyId;
+				}
+			} else if (req.user && req.user.role !== "SuperAdmin" && req.user.companyId) {
+				filter.companyName = req.user.companyId;
+			}
+			const nextInstallmentCourseFees = await CourseFeesModel.find(filter).populate(
 				["studentInfo", "courseName"]
 			);
-			//console.log(nextInstallmentCourseFees);
 			res.status(200).json(nextInstallmentCourseFees);
 		} catch (error) {
 			res.status(500).json({ success: false, message: error.message });

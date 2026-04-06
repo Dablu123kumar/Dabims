@@ -1,14 +1,21 @@
 import moment from 'moment'
 import {useAdmissionContext} from '../../modules/auth/core/Addmission'
 import {useNavigate} from 'react-router-dom'
+import {useCompanyContext} from '../compay/CompanyContext'
+import {useAuth} from '../../modules/auth'
 
 const ListAlertPendingStudent = () => {
   const navigate = useNavigate()
   const studentCTX = useAdmissionContext()
+  const {selectedCompany} = useCompanyContext()
+  const {currentUser} = useAuth()
   const filteredStudentsAlertData =
-    studentCTX.getAllStudentsAlertStudentPendingFeesQuery?.data?.filter(
-      (s) => s.Status === 'pending'
-    )
+    studentCTX.getAllStudentsAlertStudentPendingFeesQuery?.data?.filter((s) => {
+      if (s.Status !== 'pending') return false
+      if (!selectedCompany?._id) return true
+      if (currentUser?.role === 'SuperAdmin') return !s?.companyId || s.companyId === selectedCompany._id
+      return s?.companyId === selectedCompany._id
+    })
 
   return (
     <div className={`card`}>

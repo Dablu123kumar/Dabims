@@ -14,6 +14,7 @@ export const createPaymentOptionController = asyncHandler(
         name,
         createdBy: req.user.fName + " " + req.user.lName,
         date,
+        companyId: req.user.companyId || null,
       });
       const savedPaymentOptions = await newPaymentOption.save();
       res.status(201).json(savedPaymentOptions);
@@ -26,7 +27,11 @@ export const createPaymentOptionController = asyncHandler(
 export const getAllPaymentOptionsListController = asyncHandler(
   async (req, res, next) => {
     try {
-      const paymentOptions = await PaymentOptionsModel.find({});
+      let filter = {};
+      if (req.user && req.user.role !== "SuperAdmin" && req.user.companyId) {
+        filter.companyId = req.user.companyId;
+      }
+      const paymentOptions = await PaymentOptionsModel.find(filter);
       res.status(200).json(paymentOptions);
     } catch (error) {
       res.status(500).json({ error: error });

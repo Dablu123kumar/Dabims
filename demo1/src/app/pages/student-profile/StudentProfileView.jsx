@@ -13,6 +13,13 @@ import StudentCourseFee from './StudentCourseFee'
 const BASE_URL = process.env.REACT_APP_BASE_URL
 const BASE_URL_Image = `${BASE_URL}/api/images`
 
+// Safe date parser — returns null for any invalid/missing date
+const safeDate = (val) => {
+  if (!val) return null
+  const d = new Date(val)
+  return isNaN(d.getTime()) ? null : d
+}
+
 const StudentProfileView = () => {
   const params = useParams()
   const companyCTX = useCompanyContext()
@@ -429,11 +436,7 @@ const StudentProfileView = () => {
                     <div className='col-lg-8 fv-row'>
                       <DatePicker
                         readOnly
-                        selected={
-                          studentInfoData?.date_of_birth
-                            ? new Date(studentInfoData.date_of_birth)
-                            : null
-                        }
+                        selected={safeDate(studentInfoData?.date_of_birth)}
                         //onChange={(date) => formik.setFieldValue('date_of_birth', date)}
                         dateFormat='dd/MM/yyyy'
                         className='form-control form-control-lg form-control-solid'
@@ -551,7 +554,7 @@ const StudentProfileView = () => {
                     <div className='col-lg-8 fv-row'>
                       <DatePicker
                         readOnly
-                        selected={studentInfoData?.courseduration}
+                        selected={safeDate(studentInfoData?.courseduration)}
                         //onChange={(date) => formik.setFieldValue('courseRemainderDuration', date)}
                         dateFormat='dd/MM/yyyy'
                         className='form-control form-control-lg form-control-solid'
@@ -654,7 +657,7 @@ const StudentProfileView = () => {
                       <div className='col-lg-8 fv-row'>
                         <DatePicker
                           readOnly
-                          selected={studentInfoData?.date_of_joining}
+                          selected={safeDate(studentInfoData?.date_of_joining)}
                           //onChange={(date) => formik.setFieldValue('date_of_joining', date)}
                           dateFormat='dd/MM/yyyy'
                           className='form-control form-control-lg form-control-solid'
@@ -755,7 +758,7 @@ const StudentProfileView = () => {
                     <div className='col-lg-8 fv-row'>
                       <DatePicker
                         readOnly
-                        selected={studentInfoData?.installment_duration}
+                        selected={safeDate(studentInfoData?.installment_duration)}
                         //onChange={(date) => formik.setFieldValue('date_of_joining', date)}
                         dateFormat='dd/MM/yyyy'
                         className='form-control form-control-lg form-control-solid'

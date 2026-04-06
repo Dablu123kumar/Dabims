@@ -50,7 +50,11 @@ export const addDayBookAccountController = asyncHandler(
 export const getDayBookAccountsListsController = asyncHandler(
   async (req, res, next) => {
     try {
-      const daybookAccounts = await DayBookAccountModel.find({});
+      let filter = {};
+      if (req.user && req.user.role !== "SuperAdmin" && req.user.companyId) {
+        filter.companyId = req.user.companyId;
+      }
+      const daybookAccounts = await DayBookAccountModel.find(filter);
       res.status(200).json(daybookAccounts);
     } catch (error) {
       res
@@ -164,7 +168,11 @@ export const addDayBookDataController = asyncHandler(async (req, res, next) => {
 
 export const getDayBookDataController = asyncHandler(async (req, res, next) => {
   try {
-    const dayBookData = await DayBookDataModel.find({})
+    let filter = {};
+    if (req.user && req.user.role !== "SuperAdmin" && req.user.companyId) {
+      filter.companyId = req.user.companyId;
+    }
+    const dayBookData = await DayBookDataModel.find(filter)
       .populate(["studentInfo", "linkDayBookAccountData"])
       .sort({ dayBookDatadate: 1 });
     res.status(200).json(dayBookData);

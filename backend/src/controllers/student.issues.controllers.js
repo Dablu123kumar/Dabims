@@ -32,7 +32,11 @@ export const addStudentIssueController = async (req, res) => {
 
 export const getAllStudentIssuesListsController = async (req, res) => {
   try {
-    const studentIssues = await StudentIssueModel.find({}).sort({
+    let filter = {};
+    if (req.user && req.user.role !== "SuperAdmin" && req.user.companyId) {
+      filter.companyId = req.user.companyId;
+    }
+    const studentIssues = await StudentIssueModel.find(filter).sort({
       createdAt: -1,
     });
     res.status(200).json(studentIssues);
@@ -123,7 +127,11 @@ export const showStudentIssueOnDashboardController = async (req, res) => {
 
 export const getAllShowStudentIssueOnDashboardController = async (req, res) => {
   try {
-    const getAllStudentIssueStatus = await ShowStudentDashboardModel.find();
+    let filter = {};
+    if (req.user && req.user.role !== "SuperAdmin" && req.user.companyId) {
+      filter.companyId = req.user.companyId;
+    }
+    const getAllStudentIssueStatus = await ShowStudentDashboardModel.find(filter);
     return res.status(200).json(getAllStudentIssueStatus);
   } catch (error) {
     res.status(500).json({ success: false, message: "Internal server error" });

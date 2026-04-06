@@ -59,8 +59,20 @@ export const updateStudentAsDropOutController = asyncHandler(
 
 export const getAllStudentsController = asyncHandler(async (req, res, next) => {
   try {
+    // Multi-tenant: filter students by company
+    let studentFilter = {};
+    if (req.query.companyId) {
+      if (req.user?.role === "SuperAdmin") {
+        studentFilter.$or = [{ companyName: req.query.companyId }, { companyName: null }];
+      } else {
+        studentFilter.companyName = req.query.companyId;
+      }
+    } else if (req.user && req.user.role !== "SuperAdmin" && req.user.companyId) {
+      studentFilter.companyName = req.user.companyId;
+    }
+
     const users = await admissionFormModel
-      .find({})
+      .find(studentFilter)
       .populate(["courseName"])
       .sort({ name: "asc" });
 
@@ -467,8 +479,13 @@ export const getSingleStudentDetailsController = asyncHandler(
 export const getAllStudentsMonthlyCollectionFeesController = asyncHandler(
   async (req, res, next) => {
     try {
+      // Multi-tenant filter
+      let filter = {};
+      if (req.user && req.user.role !== "SuperAdmin" && req.user.companyId) {
+        filter.companyName = req.user.companyId;
+      }
       const student = await admissionFormModel
-        .find({})
+        .find(filter)
         .sort({ createdAt: -1 })
         .populate("courseName");
       res.status(200).json(student);
@@ -482,7 +499,7 @@ export const getStudentsAccordingToCompanyController = asyncHandler(
   async (req, res, next) => {
     const { companyId } = req.params;
     try {
-      const students = await admissionFormModel.find({});
+      const students = await admissionFormModel.find({ companyName: companyId });
       res.status(200).json(students);
     } catch (error) {
       res.status(500).json({ success: false, message: error.message });
@@ -663,8 +680,12 @@ export const createAlertStudentPendingFeesController = asyncHandler(
 export const getAlertStudentPendingFeesController = asyncHandler(
   async (req, res, next) => {
     try {
+      let filter = {};
+      if (req.user && req.user.role !== "SuperAdmin" && req.user.companyId) {
+        filter.companyId = req.user.companyId;
+      }
       const getAlertStudentPendingFeesData =
-        await AlertStudentPendingFeesModel.find({});
+        await AlertStudentPendingFeesModel.find(filter);
       res.status(200).json(getAlertStudentPendingFeesData);
     } catch (error) {
       res.status(500).json({ success: false, message: error.message });
@@ -674,8 +695,12 @@ export const getAlertStudentPendingFeesController = asyncHandler(
 export const getAllStudentsAlertPendingFeesDataController = asyncHandler(
   async (req, res, next) => {
     try {
+      let filter = {};
+      if (req.user && req.user.role !== "SuperAdmin" && req.user.companyId) {
+        filter.companyId = req.user.companyId;
+      }
       const getAlertStudentPendingFeesData =
-        await AlertStudentPendingFeesModel.find({}).populate("studentId");
+        await AlertStudentPendingFeesModel.find(filter).populate("studentId");
 
       let adminEmail = null;
       let superAdminEmail = null;

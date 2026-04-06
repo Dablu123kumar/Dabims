@@ -20,7 +20,7 @@ const companySchema = new mongoose.Schema(
     },
     companyWebsite: {
       type: String,
-      required: true,
+      default: "",
     },
     companyAddress: {
       type: String,
@@ -36,6 +36,15 @@ const companySchema = new mongoose.Schema(
     isGstBased: {
       type: String,
       required: true,
+    },
+    isApproved: {
+      type: Boolean,
+      default: false,
+    },
+    status: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
     },
   },
   { timestamps: true }

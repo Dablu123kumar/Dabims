@@ -9,6 +9,7 @@ import {UsersListLoading} from '../components/loading/UsersListLoading'
 import {createUser, updateUser} from '../core/_requests'
 import {useQueryResponse} from '../core/QueryResponseProvider'
 import {toast} from 'react-toastify'
+import {useAuth} from '../../../../auth'
 
 type Props = {
   isUserLoading: boolean
@@ -27,6 +28,8 @@ const editUserSchema = Yup.object().shape({
 const UserEditModalForm: FC<Props> = ({user, isUserLoading}) => {
   const {setItemIdForUpdate} = useListView()
   const {refetch} = useQueryResponse()
+  const {currentUser} = useAuth()
+  const isSuperAdmin = currentUser?.role === 'SuperAdmin'
   // console.log(user);
 
   const [userForEdit] = useState<User>({
@@ -358,32 +361,30 @@ const UserEditModalForm: FC<Props> = ({user, isUserLoading}) => {
               {/* end::Radio */}
             </div>
             {/* end::Input row */}
-            <div className='separator separator-dashed my-5'></div>
-            {/* begin::Input row */}
-            <div className='d-flex fv-row'>
-              {/* begin::Radio */}
-              <div className='form-check form-check-custom form-check-solid'>
-                {/* begin::Input */}
-                <input
-                  className='form-check-input me-3'
-                  {...formik.getFieldProps('role')}
-                  name='role'
-                  type='radio'
-                  id='kt_modal_update_role_option_4'
-                  value='SuperAdmin'
-                  checked={formik.values.role === 'SuperAdmin'}
-                  disabled={formik.isSubmitting || isUserLoading}
-                />
-                {/* end::Input */}
-                {/* begin::Label */}
-                <label className='form-check-label' htmlFor='kt_modal_update_role_option_4'>
-                  <div className='fw-bolder text-gray-800'>SuperAdmin</div>
-                </label>
-                {/* end::Label */}
-              </div>
-              {/* end::Radio */}
-            </div>
-            {/* end::Input row */}
+            {isSuperAdmin && (
+              <>
+                <div className='separator separator-dashed my-5'></div>
+                {/* begin::Input row */}
+                <div className='d-flex fv-row'>
+                  <div className='form-check form-check-custom form-check-solid'>
+                    <input
+                      className='form-check-input me-3'
+                      {...formik.getFieldProps('role')}
+                      name='role'
+                      type='radio'
+                      id='kt_modal_update_role_option_4'
+                      value='SuperAdmin'
+                      checked={formik.values.role === 'SuperAdmin'}
+                      disabled={formik.isSubmitting || isUserLoading}
+                    />
+                    <label className='form-check-label' htmlFor='kt_modal_update_role_option_4'>
+                      <div className='fw-bolder text-gray-800'>SuperAdmin</div>
+                    </label>
+                  </div>
+                </div>
+                {/* end::Input row */}
+              </>
+            )}
             <div className='separator separator-dashed my-5'></div>
             {/* begin::Input row */}
             <div className='d-flex fv-row'>

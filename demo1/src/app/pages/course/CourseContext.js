@@ -3,13 +3,22 @@ import axios from 'axios'
 import {useQueryClient, useMutation, useQuery} from 'react-query'
 import {useAuth} from '../../modules/auth'
 
-const CourseContext = createContext() 
+const CourseContext = createContext()
 
 const BASE_URL = process.env.REACT_APP_BASE_URL
 
+// Helper: get selectedCompany from localStorage (shared with CompanyContext)
+const getSelectedCompanyId = () => {
+  try {
+    const saved = localStorage.getItem('selectedCompany')
+    if (saved) return JSON.parse(saved)?._id || ''
+  } catch(e) {}
+  return ''
+}
+
 export const CourseContextProvider = ({children}) => {
   const queryClient = useQueryClient()
-  const {auth} = useAuth()
+  const {auth, currentUser} = useAuth()
   let config = {
     headers: {
       Authorization: `Bearer ${auth?.api_token}`,
@@ -20,10 +29,12 @@ export const CourseContextProvider = ({children}) => {
     queryKey: ['getCourseLists'],
     queryFn: async () => {
       try {
-        const response = await axios.get(`${BASE_URL}/api/courses`, config)
+        const cId = currentUser?.role === 'SuperAdmin' ? getSelectedCompanyId() : ''
+        const url = cId ? `${BASE_URL}/api/courses?companyId=${cId}` : `${BASE_URL}/api/courses`
+        const response = await axios.get(url, config)
         return response.data
       } catch (error) {
-        throw new Error('Error fetching student data: ' + error.message)
+        throw new Error('Error fetching course data: ' + error.message)
       }
     },
   })

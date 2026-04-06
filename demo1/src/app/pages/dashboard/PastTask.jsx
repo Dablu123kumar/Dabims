@@ -1,19 +1,23 @@
 import React from 'react'
 import {KTIcon} from '../../../_metronic/helpers'
 import {useCustomFormFieldContext} from '../enquiry-related/dynamicForms/CustomFormFieldDataContext'
+import {useCompanyContext} from '../compay/CompanyContext'
+import {useAuth} from '../../modules/auth'
 import moment from 'moment'
 
 const PastTask = ({className}) => {
   const studentNotesCTX = useCustomFormFieldContext()
+  const {selectedCompany} = useCompanyContext()
+  const {currentUser} = useAuth()
   const studentData = studentNotesCTX?.getStudentNotesListsQuery?.data?.allStudentNotes
 
-  // Get today's date, and set it to the start of the day
   const today = moment().startOf('day')
 
-  // Filter past tasks: Tasks before today's date
   const pastTasks = studentData?.filter((task) => {
-    const taskDate = moment(task.startTime)
-    return taskDate.isBefore(today, 'day')
+    if (!moment(task.startTime).isBefore(today, 'day')) return false
+    if (!selectedCompany?._id) return true
+    if (currentUser?.role === 'SuperAdmin') return !task?.companyId || task.companyId === selectedCompany._id
+    return task?.companyId === selectedCompany._id
   })
 
   return (

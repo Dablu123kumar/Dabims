@@ -61,6 +61,13 @@ export function getUserByToken(token: string) {
   })
 }
 
+// Company self-registration (sends FormData for logo upload)
+export function registerCompany(formData: FormData) {
+  return axios.post<AuthModel>(`${BASE_URL}/api/company/register`, formData, {
+    headers: {'Content-Type': 'multipart/form-data'},
+  })
+}
+
 
 
 

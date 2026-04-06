@@ -8,6 +8,9 @@ export interface AuthModel {
   last_name?: string // User's last name
   role?: string // User's role
   _id?: string // User ID
+  companyId?: string // Company ID for multi-tenant
+  pending?: boolean // True when company registration is awaiting owner approval
+  message?: string // Response message from server
 }
 
 export interface UserAddressModel {
@@ -61,6 +64,7 @@ export interface UserModel {
   fullname?: string
   occupation?: string
   companyName?: string
+  companyId?: string
   phone?: string
   role?: Array<number> | string
   pic?: string

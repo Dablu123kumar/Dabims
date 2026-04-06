@@ -27,9 +27,7 @@ const OldStudentMonthlyInstallmentCollection = () => {
 
                 return (
                     item?.amountPaid && companyId === paramsData?.id &&
-                    item?.studentInfo?.dropOutStudent === false &&
-                    amountDate.getMonth() === toDate.getMonth() && amountDate.getFullYear() === toDate.getFullYear() &&
-                    (studentCreationDate.getMonth() < toDate.getMonth() || studentCreationDate.getFullYear() < toDate.getFullYear())
+                    item?.studentInfo?.dropOutStudent === false
                 );
             });
 

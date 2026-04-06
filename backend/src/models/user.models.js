@@ -30,17 +30,20 @@ const userSchema = new mongoose.Schema(
         "Admin",
         "SuperAdmin",
         "Student",
+        "Company",
       ],
       default: "Student",
-      // required: true,
+    },
+    companyId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Company",
+      default: null,
     },
     api_token: {
       type: String,
-      // required: true,
     },
     studentId: {
       type: String,
-      // required: true,
     },
     // OTP fields for two-factor authentication
     otp: {

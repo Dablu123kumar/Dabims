@@ -6,20 +6,25 @@ import {useAuth} from '../../../modules/auth'
 const NumberOfYearsCourseTypesContext = createContext()
 const BASE_URL = process.env.REACT_APP_BASE_URL
 
+const getSelectedCompanyId = () => {
+  try { return JSON.parse(localStorage.getItem('selectedCompany') || '{}')?._id || '' } catch(e) { return '' }
+}
+
 export const NumberOfYearsCourseTypesContextProvider = ({children}) => {
   const queryClient = useQueryClient()
-  const {auth} = useAuth()
+  const {auth, currentUser} = useAuth()
   let config = {
     headers: {
       Authorization: `Bearer ${auth?.api_token}`,
     },
   }
-
   const numberOfCourseYearsTypesLists = useQuery({
     queryKey: ['getNumberOfCourseYearsTypes'],
     queryFn: async () => {
       try {
-        const response = await axios.get(`${BASE_URL}/api/courses/numberOfYears`, config)
+        const cId = currentUser?.role === 'SuperAdmin' ? getSelectedCompanyId() : ''
+        const url = cId ? `${BASE_URL}/api/courses/numberOfYears?companyId=${cId}` : `${BASE_URL}/api/courses/numberOfYears`
+        const response = await axios.get(url, config)
         return response.data
       } catch (error) {
         throw new Error('Error fetching student data: ' + error.message)

@@ -274,8 +274,8 @@ const StudentEmailsTable = ({ studentInfoData }) => {
               className='btn btn-primary'
               onClick={() => {
                 selectValue === emailTemplate?.[0]?.customTemplate
-                  ? sendWarningEmail(student.length > 0 ? student[0] : null)
-                  : sendAddmissionCancellationMail(student.length > 0 ? student[0] : null)
+                  ? sendWarningEmail(student.length > 0 ? student[0] : { studentInfo: studentInfoData?._id })
+                  : sendAddmissionCancellationMail(student.length > 0 ? student[0] : { studentInfo: studentInfoData?._id })
               }}
               disabled={studentInfoData?.remainingCourseFees === 0 || isSendingEmail}
             >

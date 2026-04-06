@@ -29,12 +29,16 @@ const QueryResponseProvider: FC<WithChildren> = ({children}) => {
     }
   }, [updatedQuery])
 
+  const selectedCompanyId = (() => {
+    try { return JSON.parse(localStorage.getItem('selectedCompany') || '{}')?._id || '' } catch(e) { return '' }
+  })()
+
   const {
     isFetching,
     refetch,
     data: response,
   } = useQuery(
-    `${BASE_URL}/api/users?${query}`,
+    [`${BASE_URL}/api/users`, query, selectedCompanyId],
     () => {
       return getUsers(query)
     },

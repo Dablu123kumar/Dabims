@@ -31,6 +31,11 @@ const courseSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    companyId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Company",
+      default: null,
+    },
     createdBy: {
       type: String,
       required: true,

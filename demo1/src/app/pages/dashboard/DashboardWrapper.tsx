@@ -35,33 +35,26 @@ import SelectCompany from './SelectCompany'
 import { useCompanyContext } from '../compay/CompanyContext'
 import CompanyCollectionDashBoardBox from './CompanyCollectionDashboardBox'
 
-const DashboardPage: FC = () => (
+const DashboardPage: FC = () => {
+  const {currentUser} = useAuth()
+
+  return (
   <>
     {/* begin::Row */}
     <div className='row g-5 g-xl-10 mb-5 mb-xl-10'>
       {/* begin::Col */}
-      {/* <div className='col-md-6 col-lg-6 col-xl-6 col-xxl-3 mb-md-5 mb-xl-10'>
-        <CardsWidget20
-          className='h-md-50 mb-5 mb-xl-10'
-          description='Active Projects'
-          color='#F1416C'
-          img={toAbsoluteUrl('/media/patterns/vector-1.png')}
-        />
-        <CardsWidget7
-          className='h-md-50 mb-5 mb-xl-10'
-          description='Professionals'
-          icon={false}
-          stats={357}
-          labelColor='dark'
-          textColor='gray-300'
-        />
-      </div> */}
       {/* end::Col */}
 
       {/* begin::Col */}
       <div className='col-md-6 col-lg-6 col-xl-6 col-xxl-4 mb-md-5 mb-xl-10'>
-        <CollectionDashBoardBox className='h-md-50 mb-5 mb-xl-10' />
-        <CompanyCollectionDashBoardBox className='mt-6' />
+        {/* SuperAdmin: overall earnings + selected company earnings */}
+        {/* Company role: only their company earnings */}
+        {currentUser?.role === 'SuperAdmin' && (
+          <CollectionDashBoardBox className='mb-5' />
+        )}
+        {(currentUser?.role === 'SuperAdmin' || currentUser?.role === 'Company') && (
+          <CompanyCollectionDashBoardBox className='mt-6' />
+        )}
         {/* <ListsWidget26 className='h-lg-50' /> */}
         <div className='card card-header pt-5 h-lg-50'>
           <h3 className='card-title text-gray-800 fw-bold'>Flagged Students</h3>
@@ -144,7 +137,8 @@ const DashboardPage: FC = () => (
       </div>
     </div> */}
   </>
-)
+  )
+}
 
 const DashboardWrapper: FC = () => {
   const intl = useIntl()
@@ -223,16 +217,17 @@ const DashboardWrapper: FC = () => {
     <div style={{position: 'relative'}}>
       <PageTitle breadcrumbs={[]}>{intl.formatMessage({id: 'MENU.DASHBOARD'})}</PageTitle>
 
-            <div className='d-flex justify-content-end mb-5'>
-        <SelectCompany />
-      </div>
-
-      {!selectedCompany ? (
-        <div className='alert alert-warning'>
-          Please select a company to view dashboard data
+      {/* SuperAdmin: show SelectCompany to switch companies. Others: hidden (auto-selected) */}
+      {currentUser?.role === 'SuperAdmin' && (
+        <div className='d-flex justify-content-end mb-5'>
+          <SelectCompany />
         </div>
-      ) : (
+      )}
+
+      {selectedCompany ? (
         <DashboardPage />
+      ) : (
+        <div className='alert alert-info'>Loading company data...</div>
       )}
       
       {currentUser?.role !== 'Student' && (

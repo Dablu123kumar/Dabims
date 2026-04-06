@@ -2,13 +2,22 @@ import {Fragment} from 'react'
 import {KTIcon} from '../../../_metronic/helpers'
 import {useNavigate} from 'react-router-dom'
 import {useCompanyContext} from '../compay/CompanyContext'
+import {useAuth} from '../../modules/auth'
 
 const ShowStudentNotesNameDashboard = ({className}) => {
   const context = useCompanyContext()
+  const {currentUser} = useAuth()
   const {data: studentIssuesLists} = context.useGetAllStudentIssueStatusQuery
+  const {selectedCompany} = context
   const navigate = useNavigate()
 
-  const filteredData = studentIssuesLists?.filter((s) => s?.showStudent === true)
+  const filteredData = studentIssuesLists?.filter((s) => {
+    if (!s?.showStudent) return false
+    if (!selectedCompany?._id) return true
+    // SuperAdmin: show matched + legacy (null companyId)
+    if (currentUser?.role === 'SuperAdmin') return !s?.companyId || s.companyId === selectedCompany._id
+    return s?.companyId === selectedCompany._id
+  })
 
   let themeMode = 'system'
 

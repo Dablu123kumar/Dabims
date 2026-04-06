@@ -5,6 +5,21 @@ import CourseModel from "../models/course/courses.models.js";
 import NumberOfYearsModel from "../models/course/numberOfYears.models.js";
 import SubjectModel from "../models/subject/subject.models.js";
 
+// Helper: build company filter from query param or user's companyId
+function buildCompanyFilter(req) {
+  if (req.query.companyId) {
+    // SuperAdmin filtering: include legacy data (null companyId)
+    if (req.user?.role === "SuperAdmin") {
+      return { $or: [{ companyId: req.query.companyId }, { companyId: null }] };
+    }
+    return { companyId: req.query.companyId };
+  }
+  if (req.user && req.user.role !== "SuperAdmin" && req.user.companyId) {
+    return { companyId: req.user.companyId };
+  }
+  return {};
+}
+
 //----------------------------- Course Controller -----------------------------
 export const createCourseController = asyncHandler(async (req, res, next) => {
   try {
@@ -22,6 +37,7 @@ export const createCourseController = asyncHandler(async (req, res, next) => {
       courseName,
       createdBy: req.user.fName + " " + req.user.lName,
       user: req.user._id,
+      companyId: req.user.companyId || null,
       courseType,
       numberOfYears,
       category,
@@ -36,7 +52,8 @@ export const createCourseController = asyncHandler(async (req, res, next) => {
 
 export const getAllCourseController = asyncHandler(async (req, res, next) => {
   try {
-    const courses = await CourseModel.find({})
+    const filter = buildCompanyFilter(req);
+    const courses = await CourseModel.find(filter)
       .populate(["category", "numberOfYears", "courseType", "user"])
       .sort({ createdAt: -1 });
     res.status(200).json(courses);
@@ -152,6 +169,7 @@ export const createCourseCategoryController = asyncHandler(
       let newCategory = new categoryModel({
         category,
         user: req.user._id,
+        companyId: req.user.companyId || null,
         createdBy: req.user.fName + " " + req.user.lName,
       });
       await newCategory.save();
@@ -165,7 +183,8 @@ export const createCourseCategoryController = asyncHandler(
 export const getAllCourseCategoryController = asyncHandler(
   async (req, res, next) => {
     try {
-      const allCategories = await categoryModel.find({});
+      const filter = buildCompanyFilter(req);
+      const allCategories = await categoryModel.find(filter);
       res.status(200).json(allCategories);
     } catch (error) {
       res.status(500).json({ error: error });
@@ -252,6 +271,7 @@ export const createCourseTypeController = asyncHandler(
       let newCourseType = new CourseTypeModel({
         courseType,
         user: req.user._id,
+        companyId: req.user.companyId || null,
         createdBy: req.user.fName + " " + req.user.lName,
       });
 
@@ -266,7 +286,8 @@ export const createCourseTypeController = asyncHandler(
 export const getAllCourseTypeController = asyncHandler(
   async (req, res, next) => {
     try {
-      let courseType = await CourseTypeModel.find()
+      const filter = buildCompanyFilter(req);
+      let courseType = await CourseTypeModel.find(filter)
         .sort({ createdAt: -1 })
         .exec();
       res.status(200).json(courseType);
@@ -333,6 +354,7 @@ export const createCourseNumberOfYearController = asyncHandler(
       let newCourseNumberOfYears = new NumberOfYearsModel({
         numberOfYears,
         user: req.user._id,
+        companyId: req.user.companyId || null,
         createdBy: req.user.fName + " " + req.user.lName,
       });
       await newCourseNumberOfYears.save();
@@ -345,7 +367,8 @@ export const createCourseNumberOfYearController = asyncHandler(
 export const getNumberOfYearsController = asyncHandler(
   async (req, res, next) => {
     try {
-      let result = await NumberOfYearsModel.find({});
+      const filter = buildCompanyFilter(req);
+      let result = await NumberOfYearsModel.find(filter);
       res.status(200).json(result);
     } catch (error) {
       res.status(500).json({ error: error });
