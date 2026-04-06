@@ -1,6 +1,7 @@
 export interface AuthModel {
   api_token?: string
-  refreshToken?: string
+  refresh_token?: string // Refresh token from server (snake_case)
+  refreshToken?: string  // Alias kept for legacy code
   expiresAt?: number // Token expiration timestamp in milliseconds
   requiresOTP?: boolean // Flag to indicate OTP verification is needed
   email?: string // Email for OTP verification

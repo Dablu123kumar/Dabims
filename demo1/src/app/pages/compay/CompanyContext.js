@@ -4,13 +4,17 @@ import {useQueryClient, useMutation, useQuery} from 'react-query'
 import {useAuth} from '../../modules/auth'
 import {useNavigate} from 'react-router-dom'
 import {toast} from 'react-toastify'
+import {useDispatch, useSelector} from 'react-redux'
+import {setSelectedCompany as setSelectedCompanyAction} from '../../../store/slices/companySlice'
 
 const CompanyContext = createContext()
 
 const BASE_URL = process.env.REACT_APP_BASE_URL
 
 export const CompanyContextProvider = ({children}) => {
-  const [selectedCompany,setSelectedCompany] = useState(null)
+  const dispatch = useDispatch()
+  const selectedCompany = useSelector((state) => state.company.selectedCompany)
+  const setSelectedCompany = (company) => dispatch(setSelectedCompanyAction(company))
   const [emailTemplate,setEmailTemplate] = useState([])
   const queryClient = useQueryClient()
   const {auth} = useAuth()
@@ -780,16 +784,9 @@ export const CompanyContextProvider = ({children}) => {
   })
 
 
-  useEffect(()=>{
-    const savedCompany = localStorage.getItem('selectedCompany')
-    if(savedCompany){
-      setSelectedCompany(JSON.parse(savedCompany))
-    }
-  },[])
+  // Invalidate all queries when selected company changes so data re-fetches
   useEffect(()=>{
     if(selectedCompany){
-      localStorage.setItem('selectedCompany',JSON.stringify(selectedCompany))
-      // Invalidate all data queries so they re-fetch with new company filter
       queryClient.invalidateQueries()
     }
   },[selectedCompany])
@@ -801,9 +798,7 @@ export const CompanyContextProvider = ({children}) => {
       getCompanyLists?.data?.length > 0 &&
       !selectedCompany
     ){
-      const authData = JSON.parse(localStorage.getItem('kt-auth-react-v') || '{}')
-      const role = authData?.role
-      if(role && role !== 'Student'){
+      if(auth?.role && auth.role !== 'Student'){
         setSelectedCompany(getCompanyLists.data[0])
       }
     }

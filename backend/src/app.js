@@ -1,6 +1,8 @@
 import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import path from "path";
+import { generalLimiter } from "./middlewares/rateLimit.middleware.js";
 import userRoutes from "./routes/users.routes.js";
 import addMissionFormRoutes from "./routes/addMissionForm.routes.js";
 import studentsRoutes from "./routes/students.routes.js";
@@ -40,8 +42,10 @@ const app = express();
 // Apply CORS middleware with options
 // app.use(cors({ origin: [BACKEND_URL, FRONTEND_URL], credentials: true }));
 app.use(cors({ origin: "*" }));
+app.use(cookieParser());
 app.use(express.json({ limit: "20mb" }));
 app.use(express.urlencoded({ extended: true }));
+app.use(generalLimiter);
 
 startSchedulerStudentRemainderFeesToStudents();
 

@@ -1,6 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import {FC, useContext, useState, useEffect, useMemo} from 'react'
 import {useQuery} from 'react-query'
+import {useSelector} from 'react-redux'
 import {
   createResponseContext,
   initialQueryResponse,
@@ -29,9 +30,7 @@ const QueryResponseProvider: FC<WithChildren> = ({children}) => {
     }
   }, [updatedQuery])
 
-  const selectedCompanyId = (() => {
-    try { return JSON.parse(localStorage.getItem('selectedCompany') || '{}')?._id || '' } catch(e) { return '' }
-  })()
+  const selectedCompanyId = useSelector((state: any) => state.company.selectedCompany?._id || '')
 
   const {
     isFetching,

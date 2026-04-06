@@ -4,6 +4,10 @@ import axios from 'axios'
 import {Chart, registerables} from 'chart.js'
 import {QueryClient, QueryClientProvider} from 'react-query'
 import {ReactQueryDevtools} from 'react-query/devtools'
+// Redux
+import {Provider} from 'react-redux'
+import {PersistGate} from 'redux-persist/integration/react'
+import {store, persistor} from './store'
 // Apps
 import {MetronicI18nProvider} from './_metronic/i18n/Metronici18n'
 import './_metronic/assets/fonticon/fonticon.css'
@@ -45,6 +49,8 @@ const queryClient = new QueryClient()
 const container = document.getElementById('root')
 if (container) {
   createRoot(container).render(
+    <Provider store={store}>
+    <PersistGate loading={null} persistor={persistor}>
     <QueryClientProvider client={queryClient}>
       <MetronicI18nProvider>
         <AuthProvider>
@@ -84,5 +90,7 @@ if (container) {
       <ToastContainer />
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
+    </PersistGate>
+    </Provider>
   )
 }

@@ -10,6 +10,7 @@ const isTokenExpired = (auth: AuthModel): boolean => {
   return currentTime > auth.expiresAt
 }
 
+// Returns stored auth regardless of token expiry — the axios interceptor handles refresh/logout
 const getAuth = (): AuthModel | undefined => {
   if (!localStorage) {
     return
@@ -23,9 +24,9 @@ const getAuth = (): AuthModel | undefined => {
   try {
     const auth: AuthModel = JSON.parse(lsValue) as AuthModel
     if (auth) {
-      // Check if token has expired
-      if (isTokenExpired(auth)) {
-        console.warn('Token has expired, removing from storage')
+      // If expired AND no refresh token, remove immediately
+      if (isTokenExpired(auth) && !auth.refresh_token && !auth.refreshToken) {
+        console.warn('Token expired and no refresh token, removing from storage')
         removeAuth()
         return undefined
       }
@@ -62,6 +63,30 @@ const removeAuth = () => {
 }
 
 let logoutCallback: ((() => void) | null) = null
+let isRefreshing = false
+let failedQueue: Array<{ resolve: (token: string) => void; reject: (err: any) => void }> = []
+
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error)
+    } else {
+      prom.resolve(token!)
+    }
+  })
+  failedQueue = []
+}
+
+const doLogout = () => {
+  removeAuth()
+  if (logoutCallback) {
+    logoutCallback()
+  } else if (!window.location.pathname.includes('/auth')) {
+    setTimeout(() => {
+      window.location.href = '/auth/login'
+    }, 100)
+  }
+}
 
 const setLogoutCallback = (callback: ((() => void) | null)) => {
   logoutCallback = callback
@@ -69,7 +94,7 @@ const setLogoutCallback = (callback: ((() => void) | null)) => {
 
 export function setupAxios(axios: any) {
   axios.defaults.headers.Accept = 'application/json'
-  
+
   // Request Interceptor - Add token to headers
   axios.interceptors.request.use(
     (config: { headers: { Authorization: string } }) => {
@@ -82,25 +107,62 @@ export function setupAxios(axios: any) {
     (err: any) => Promise.reject(err)
   )
 
-  // Response Interceptor - Handle expired token (401 Unauthorized)
+  // Response Interceptor - Try refresh on 401, only logout if refresh also fails
   axios.interceptors.response.use(
     (response: any) => response,
-    (error: any) => {
-      if (error.response?.status === 401) {
-        // Token expired or unauthorized - clear auth
-        console.warn('Token expired or unauthorized (401), logging out...')
-        removeAuth()
-        
-        // Call the logout callback if set, otherwise fallback to redirect
-        if (logoutCallback) {
-          logoutCallback()
-        } else if (!window.location.pathname.includes('/auth')) {
-          setTimeout(() => {
-            window.location.href = '/auth/login'
-          }, 100)
-        }
+    async (error: any) => {
+      const originalRequest = error.config
+
+      if (error.response?.status !== 401 || originalRequest._retry) {
+        return Promise.reject(error)
       }
-      return Promise.reject(error)
+
+      // Don't retry the refresh endpoint itself
+      if (originalRequest.url?.includes('/users/refresh-token')) {
+        doLogout()
+        return Promise.reject(error)
+      }
+
+      const auth = getAuth()
+      const refreshToken = auth?.refresh_token || auth?.refreshToken
+      if (!refreshToken) {
+        doLogout()
+        return Promise.reject(error)
+      }
+
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject })
+        }).then((token) => {
+          originalRequest.headers.Authorization = `Bearer ${token}`
+          return axios(originalRequest)
+        })
+      }
+
+      originalRequest._retry = true
+      isRefreshing = true
+
+      try {
+        const response = await axios.post('/api/users/refresh-token', { refresh_token: refreshToken })
+        const { api_token, expiresAt } = response.data
+
+        // Update stored auth with new access token
+        const currentAuth = getAuth()
+        if (currentAuth) {
+          setAuth({ ...currentAuth, api_token, expiresAt })
+        }
+
+        axios.defaults.headers.common['Authorization'] = `Bearer ${api_token}`
+        originalRequest.headers.Authorization = `Bearer ${api_token}`
+        processQueue(null, api_token)
+        return axios(originalRequest)
+      } catch (refreshError) {
+        processQueue(refreshError, null)
+        doLogout()
+        return Promise.reject(refreshError)
+      } finally {
+        isRefreshing = false
+      }
     }
   )
 }

@@ -1,13 +1,15 @@
 import asyncHandler from "../middlewares/asyncHandler.js";
 import { userModel } from "../models/user.models.js";
 import bcryptjs from "bcryptjs";
-import { generateToken } from "../utils/createToken.js";
+import { generateToken, generateTokenPair, generateAccessToken } from "../utils/createToken.js";
 import { generateOTP, getOTPExpirationTime, isOTPExpired } from "../utils/otp.utils.js";
 import jwt from "jsonwebtoken";
 import {
   BACKEND_URL,
   FRONTEND_URL,
   JWT_SECRET,
+  JWT_REFRESH_SECRET,
+  JWT_ACCESS_SECRET,
   NODE_ENV,
   USER_EMAIL,
 } from "../config/config.js";
@@ -172,12 +174,12 @@ export const loginUserController = asyncHandler(async (req, res, next) => {
 
     // In development mode, skip OTP and login directly
     if (NODE_ENV === "development") {
-      const token = generateToken(res, user._id);
-      user.api_token = token;
+      const { accessToken, refreshToken } = generateTokenPair(res, user._id);
+      user.api_token = accessToken;
       user.isOtpVerified = true;
       await user.save();
 
-      const expiresAt = Date.now() + 60 * 60 * 1000;
+      const expiresAt = Date.now() + 15 * 60 * 1000; // 15 minutes
       return res.status(200).json({
         success: true,
         message: "Login successful!",
@@ -185,8 +187,9 @@ export const loginUserController = asyncHandler(async (req, res, next) => {
         first_name: user.fName,
         role: user.role,
         email: user.email,
-        api_token: token,
-        expiresAt: expiresAt,
+        api_token: accessToken,
+        refresh_token: refreshToken,
+        expiresAt,
         last_name: user.lName,
         companyId: user.companyId || null,
         requiresOTP: false,
@@ -273,14 +276,12 @@ export const verifyOTPAndLoginController = asyncHandler(async (req, res, next) =
     user.isOtpVerified = true;
     user.otp = null; // Clear OTP
     user.otpExpiresAt = null; // Clear expiration time
-    
-    // Generate token for successful login
-    const token = generateToken(res, user._id);
-    user.api_token = token;
+
+    const { accessToken, refreshToken } = generateTokenPair(res, user._id);
+    user.api_token = accessToken;
     await user.save();
 
-    // Token expires in 1 hour (3600000 milliseconds)
-    const expiresAt = Date.now() + (60 * 60 * 1000);
+    const expiresAt = Date.now() + 15 * 60 * 1000; // 15 minutes
 
     // Return user with token
     res.status(200).json({
@@ -290,8 +291,9 @@ export const verifyOTPAndLoginController = asyncHandler(async (req, res, next) =
       first_name: user.fName,
       role: user.role,
       email: user.email,
-      api_token: token,
-      expiresAt: expiresAt,
+      api_token: accessToken,
+      refresh_token: refreshToken,
+      expiresAt,
       last_name: user.lName,
       companyId: user.companyId || null,
       email_verified_at: user.createdAt,
@@ -352,6 +354,40 @@ export const resendOTPController = asyncHandler(async (req, res, next) => {
   }
 });
 
+// Refresh token controller — issues a new access token from a valid refresh token
+export const refreshTokenController = asyncHandler(async (req, res, next) => {
+  try {
+    const token = req.cookies?.refreshToken || req.body?.refresh_token;
+    if (!token) {
+      return res.status(401).json({ success: false, message: "Refresh token not provided" });
+    }
+
+    let decoded;
+    try {
+      decoded = jwt.verify(token, JWT_REFRESH_SECRET || JWT_SECRET);
+    } catch {
+      return res.status(401).json({ success: false, message: "Invalid or expired refresh token" });
+    }
+
+    const user = await userModel.findById(decoded.userId).select("-password");
+    if (!user) {
+      return res.status(401).json({ success: false, message: "User not found" });
+    }
+
+    const accessToken = generateAccessToken(user._id);
+    user.api_token = accessToken;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      api_token: accessToken,
+      expiresAt: Date.now() + 15 * 60 * 1000,
+    });
+  } catch (error) {
+    res.status(401).json({ success: false, message: "Could not refresh token" });
+  }
+});
+
 // get user by token
 export const getUserByTokn = asyncHandler(async (req, res, next) => {
   try {
@@ -360,7 +396,13 @@ export const getUserByTokn = asyncHandler(async (req, res, next) => {
       res.status(404);
       throw new Error("Please provide token");
     }
-    const { userId } = jwt.verify(api_token, JWT_SECRET);
+    // Try access secret first (new tokens), fall back to legacy secret
+    let userId;
+    try {
+      ({ userId } = jwt.verify(api_token, JWT_ACCESS_SECRET || JWT_SECRET));
+    } catch {
+      ({ userId } = jwt.verify(api_token, JWT_SECRET));
+    }
     // now find the user
     const user = await userModel.findById(userId).select("-password");
     res.status(200).send({

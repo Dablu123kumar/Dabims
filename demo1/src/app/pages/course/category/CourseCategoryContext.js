@@ -2,15 +2,13 @@ import {createContext, useContext, useState} from 'react'
 import axios from 'axios'
 import {useQueryClient, useMutation, useQuery} from 'react-query'
 import {useAuth} from '../../../modules/auth'
+import {useSelector} from 'react-redux'
 const CourseCategoryContext = createContext()
 
 const BASE_URL = process.env.REACT_APP_BASE_URL
 
-const getSelectedCompanyId = () => {
-  try { return JSON.parse(localStorage.getItem('selectedCompany') || '{}')?._id || '' } catch(e) { return '' }
-}
-
 export const CourseCategoryContextProvider = ({children}) => {
+  const selectedCompanyId = useSelector((state) => state.company.selectedCompany?._id || '')
   const queryClient = useQueryClient()
   const {auth, currentUser} = useAuth()
   let config = {
@@ -22,7 +20,7 @@ export const CourseCategoryContextProvider = ({children}) => {
     queryKey: ['getCourseCategoryLists'],
     queryFn: async () => {
       try {
-        const cId = currentUser?.role === 'SuperAdmin' ? getSelectedCompanyId() : ''
+        const cId = currentUser?.role === 'SuperAdmin' ? selectedCompanyId : ''
         const url = cId ? `${BASE_URL}/api/courses/categories?companyId=${cId}` : `${BASE_URL}/api/courses/categories`
         const response = await axios.get(url, config)
         return response.data

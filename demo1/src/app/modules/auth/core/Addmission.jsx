@@ -3,15 +3,13 @@ import axios from 'axios'
 import { useQueryClient, useMutation, useQuery } from 'react-query'
 import { useAuth } from './Auth'
 import { toast } from 'react-toastify'
+import { useSelector } from 'react-redux'
 
 const AdmissionContext = createContext()
 const BASE_URL = process.env.REACT_APP_BASE_URL
 
-const getSelectedCompanyId = () => {
-  try { return JSON.parse(localStorage.getItem('selectedCompany') || '{}')?._id || '' } catch(e) { return '' }
-}
-
 export const AdmissionContextProvider = ({ children }) => {
+  const selectedCompanyId = useSelector((state) => state.company.selectedCompany?._id || '')
   const [studentId, setStudentId] = useState('')
   const queryClient = useQueryClient()
   let { auth, currentUser } = useAuth()
@@ -25,7 +23,7 @@ export const AdmissionContextProvider = ({ children }) => {
     queryKey: ['getStudents'],
     queryFn: async () => {
       try {
-        const cId = currentUser?.role === 'SuperAdmin' ? getSelectedCompanyId() : ''
+        const cId = currentUser?.role === 'SuperAdmin' ? selectedCompanyId : ''
         const url = cId ? `${BASE_URL}/api/students?companyId=${cId}` : `${BASE_URL}/api/students`
         const response = await axios.get(url, config)
         return response.data

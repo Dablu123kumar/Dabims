@@ -2,15 +2,15 @@ import axios, {AxiosResponse} from 'axios'
 import {ID, Response} from '../../../../../../_metronic/helpers'
 import {User, UsersQueryResponse} from './_models'
 import {toast} from 'react-toastify'
+import {store} from '../../../../../../store'
 
 const API_URL = process.env.REACT_APP_THEME_API_URL
 const BASE_URL = process.env.REACT_APP_BASE_URL
 const USER_URL = `${API_URL}/user`
-// const GET_USERS_URL = `${API_URL}/users/query`
 const GET_USERS_URL = ``
 
 const getSelectedCompanyId = (): string => {
-  try { return JSON.parse(localStorage.getItem('selectedCompany') || '{}')?._id || '' } catch(e) { return '' }
+  return (store.getState() as any).company?.selectedCompany?._id || ''
 }
 
 const getUsers = async (query: string): Promise<UsersQueryResponse> => {

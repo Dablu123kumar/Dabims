@@ -1,11 +1,10 @@
 import jwt from "jsonwebtoken";
 import { userModel } from "../models/user.models.js";
-import { JWT_SECRET } from "../config/config.js";
+import { JWT_SECRET, JWT_ACCESS_SECRET } from "../config/config.js";
 
 //Protected Routes token base
 export const requireSignIn = async (req, res, next) => {
   try {
-   //console.log('token', req.cookies.jwt);
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) {
       return res
@@ -13,14 +12,24 @@ export const requireSignIn = async (req, res, next) => {
         .json({ success: false, message: "Unauthorized: No token provided" });
     }
 
-    const decoded = await jwt.verify(token, JWT_SECRET);
+    // Try access token secret first, fall back to legacy secret
+    let decoded;
+    try {
+      decoded = jwt.verify(token, JWT_ACCESS_SECRET || JWT_SECRET);
+    } catch {
+      decoded = jwt.verify(token, JWT_SECRET);
+    }
+
     req.user = await userModel.findById(decoded.userId).select("-password");
+    if (!req.user) {
+      return res.status(401).json({ success: false, message: "Unauthorized: User not found" });
+    }
     next();
   } catch (error) {
     console.error("JWT Error:", error.message);
     return res
       .status(401)
-      .json({ success: false, message: "Unauthorized: Invalid token" });
+      .json({ success: false, message: "Unauthorized: Invalid or expired token" });
   }
 };
 
