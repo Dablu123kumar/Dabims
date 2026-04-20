@@ -14,6 +14,7 @@ import {
 import {getUsers} from './_requests'
 import {User} from './_models'
 import {useQueryRequest} from './QueryRequestProvider'
+import {useAuth} from '../../../../auth'
 
 const BASE_URL = process.env.REACT_APP_BASE_URL
 
@@ -30,16 +31,21 @@ const QueryResponseProvider: FC<WithChildren> = ({children}) => {
     }
   }, [updatedQuery])
 
+  const {currentUser} = useAuth()
   const selectedCompanyId = useSelector((state: any) => state.company.selectedCompany?._id || '')
+  // For Company role always use their own companyId to avoid stale Redux state from previous sessions
+  const effectiveCompanyId = currentUser?.role === 'Company'
+    ? (currentUser?.companyId || '')
+    : selectedCompanyId
 
   const {
     isFetching,
     refetch,
     data: response,
   } = useQuery(
-    [`${BASE_URL}/api/users`, query, selectedCompanyId],
+    [`${BASE_URL}/api/users`, query, effectiveCompanyId],
     () => {
-      return getUsers(query)
+      return getUsers(query, effectiveCompanyId)
     },
     {cacheTime: 0, keepPreviousData: true, refetchOnWindowFocus: false}
   )

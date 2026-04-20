@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -iE \"\\\\.\\(tsx?|jsx?\\)$\")",
+      "Bash(xargs ls *)"
+    ]
+  }
+}

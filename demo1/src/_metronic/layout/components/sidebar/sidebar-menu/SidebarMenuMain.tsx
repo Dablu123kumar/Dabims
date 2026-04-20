@@ -72,12 +72,18 @@ const SidebarMenuMain = () => {
           {/* ----------------------------- Company Menu Start Here ............................... */}
           {companyCTX.getCompanyLists?.data?.map((CompanyListData: any, index: number) => (
             <React.Fragment key={index}>
-              {(userRoleAccess?.some(
-                (userAccess: any) =>
-                  (userAccess.role === currentUser?.role &&
-                    matchedCompanies[CompanyListData.companyName]) ||
-                  currentUser?.role === 'SuperAdmin'
-              ) || currentUser?.role === 'Company') && (
+              {(
+                // SuperAdmin sees only the selected company
+                (currentUser?.role === 'SuperAdmin' && CompanyListData._id === companyCTX.selectedCompany?._id) ||
+                // Company (owner) sees only their own company
+                (currentUser?.role === 'Company' && CompanyListData._id === currentUser?.companyId) ||
+                // Other roles see companies based on userRoleAccess permissions
+                (currentUser?.role !== 'SuperAdmin' && currentUser?.role !== 'Company' && userRoleAccess?.some(
+                  (userAccess: any) =>
+                    userAccess.role === currentUser?.role &&
+                    matchedCompanies[CompanyListData.companyName]
+                ))
+              ) && (
                 <SidebarMenuItemWithSub
                   key={CompanyListData?._id}
                   to='/apps/chat'

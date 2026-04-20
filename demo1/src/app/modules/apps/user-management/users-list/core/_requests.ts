@@ -13,8 +13,8 @@ const getSelectedCompanyId = (): string => {
   return (store.getState() as any).company?.selectedCompany?._id || ''
 }
 
-const getUsers = async (query: string): Promise<UsersQueryResponse> => {
-  const companyId = getSelectedCompanyId()
+const getUsers = async (query: string, overrideCompanyId?: string): Promise<UsersQueryResponse> => {
+  const companyId = overrideCompanyId !== undefined ? overrideCompanyId : getSelectedCompanyId()
   const companyQuery = companyId ? `&companyId=${companyId}` : ''
   return axios
     .get(`${BASE_URL}/api/users?${query}${companyQuery}`)

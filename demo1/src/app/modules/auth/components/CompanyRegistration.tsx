@@ -22,12 +22,8 @@ const companyRegistrationSchema = Yup.object().shape({
   confirmPassword: Yup.string()
     .oneOf([Yup.ref('password')], 'Passwords must match')
     .required('Confirm password is required'),
-  companyPhone: Yup.string()
-    .min(10, 'Minimum 10 digits')
-    .required('Phone is required'),
-  companyAddress: Yup.string()
-    .min(5, 'Minimum 5 characters')
-    .required('Address is required'),
+  companyPhone: Yup.string().min(10, 'Minimum 10 digits').required('Phone is required'),
+  companyAddress: Yup.string().min(5, 'Minimum 5 characters').required('Address is required'),
   companyWebsite: Yup.string(),
   reciptNumber: Yup.string().required('Receipt number is required (e.g. ILS-100)'),
   gst: Yup.string(),
@@ -47,11 +43,49 @@ const initialValues = {
   isGstBased: '',
 }
 
+const inputStyle: React.CSSProperties = {
+  height: 48,
+  borderRadius: 12,
+  border: '1.5px solid #e4e6ef',
+  background: '#f9fafc',
+  fontSize: '0.95rem',
+}
+
+const inputWithIconStyle: React.CSSProperties = {
+  ...inputStyle,
+  paddingLeft: '2.75rem',
+}
+
+const iconWrapStyle: React.CSSProperties = {
+  position: 'absolute',
+  left: 14,
+  top: '50%',
+  transform: 'translateY(-50%)',
+  color: '#8a92a6',
+  pointerEvents: 'none',
+  fontSize: 16,
+}
+
+const primaryBtnStyle: React.CSSProperties = {
+  height: 52,
+  borderRadius: 12,
+  background: 'linear-gradient(135deg, #6a4cff 0%, #9b6dff 100%)',
+  border: 'none',
+  fontWeight: 700,
+  fontSize: '1rem',
+  letterSpacing: '0.3px',
+  boxShadow: '0 10px 24px rgba(106, 76, 255, 0.35)',
+  color: '#fff',
+}
+
 export function CompanyRegistration() {
   const [loading, setLoading] = useState(false)
   const [logoFile, setLogoFile] = useState<File | null>(null)
+  const [logoPreview, setLogoPreview] = useState<string>('')
   const [logoError, setLogoError] = useState('')
   const [registrationSuccess, setRegistrationSuccess] = useState(false)
+  const [showPwd, setShowPwd] = useState(false)
+  const [showConfirmPwd, setShowConfirmPwd] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const formik = useFormik({
@@ -79,7 +113,6 @@ export function CompanyRegistration() {
         formData.append('isGstBased', values.isGstBased)
 
         const {data} = await registerCompany(formData)
-
         if (data.pending) {
           setRegistrationSuccess(true)
         }
@@ -95,26 +128,43 @@ export function CompanyRegistration() {
     },
   })
 
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null
+    setLogoFile(file)
+    if (file) {
+      setLogoError('')
+      const reader = new FileReader()
+      reader.onload = (ev) => setLogoPreview(String(ev.target?.result || ''))
+      reader.readAsDataURL(file)
+    } else {
+      setLogoPreview('')
+    }
+  }
+
   if (registrationSuccess) {
     return (
-      <div className='form w-100 p-5 rounded text-center'>
-        <div className='mb-8'>
-          <div className='symbol symbol-100px mx-auto mb-5'>
-            <span className='symbol-label bg-light-success'>
-              <i className='ki-duotone ki-check-circle fs-3x text-success'>
-                <span className='path1'></span>
-                <span className='path2'></span>
-              </i>
-            </span>
-          </div>
-          <h1 className='fw-bolder mb-3 text-success'>Registration Submitted!</h1>
-          <p className='fw-semibold fs-5 text-gray-600'>
-            Your company registration is pending approval from the owner.
-            <br />
-            You will be able to log in once your account has been activated.
-          </p>
+      <div className='text-center py-5'>
+        <div
+          className='d-inline-flex align-items-center justify-content-center mb-5'
+          style={{
+            width: 96,
+            height: 96,
+            borderRadius: 28,
+            background: 'linear-gradient(135deg, #d1fae5, #a7f3d0)',
+            color: '#059669',
+          }}
+        >
+          <i className='bi bi-check-circle-fill' style={{fontSize: 48}}></i>
         </div>
-        <Link to='/auth/login' className='btn btn-primary'>
+        <h1 className='fw-bolder mb-3' style={{fontSize: '1.75rem', color: '#059669'}}>
+          Registration Submitted!
+        </h1>
+        <p className='fw-semibold fs-6 text-gray-600 mb-6' style={{lineHeight: 1.6}}>
+          Your company registration is pending approval from the owner.
+          <br />
+          You'll be able to log in once your account has been activated.
+        </p>
+        <Link to='/auth/login' style={{...primaryBtnStyle, display: 'inline-block', padding: '14px 32px', textDecoration: 'none'}}>
           Back to Login
         </Link>
       </div>
@@ -122,237 +172,382 @@ export function CompanyRegistration() {
   }
 
   return (
-    <form
-      className='form w-100 p-5 rounded'
-      onSubmit={formik.handleSubmit}
-      noValidate
-      id='kt_company_registration_form'
-    >
-      <div className='text-center mb-11'>
-        <h1 className='fw-bolder mb-3'>Register Your Company</h1>
-        <div className='fw-semibold fs-6'>Create your company account to get started</div>
+    <form onSubmit={formik.handleSubmit} noValidate id='kt_company_registration_form'>
+      <div className='text-center mb-8'>
+        <h1 className='fw-bolder mb-2' style={{fontSize: '1.9rem', letterSpacing: '-0.5px'}}>
+          Register Your Company
+        </h1>
+        <div className='text-gray-600 fs-6'>
+          Join our Institute Management System — create your company account in minutes.
+        </div>
       </div>
 
       {formik.status && (
-        <div className='mb-lg-15 alert alert-danger'>
-          <div className='alert-text font-weight-bold'>{formik.status}</div>
+        <div className='mb-6 alert alert-danger py-3'>
+          <div className='alert-text fw-semibold'>{formik.status}</div>
         </div>
       )}
 
-      {/* Logo */}
-      <div className='fv-row mb-5'>
-        <label className='form-label fs-6 fw-bolder'>Logo</label>
-        <input
-          ref={fileInputRef}
-          type='file'
-          accept='image/*'
-          className={clsx('form-control bg-transparent', {
-            'is-invalid': logoError,
-          })}
-          onChange={(e) => {
-            const file = e.target.files?.[0] || null
-            setLogoFile(file)
-            if (file) setLogoError('')
+      {/* Logo Upload with preview */}
+      <div className='fv-row mb-6'>
+        <label className='form-label fs-6 fw-bold text-gray-800'>Company Logo</label>
+        <div
+          onClick={() => fileInputRef.current?.click()}
+          style={{
+            border: `2px dashed ${logoError ? '#f1416c' : '#d1d5e0'}`,
+            borderRadius: 14,
+            padding: '1.25rem',
+            background: '#f9fafc',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 16,
+            transition: 'all 0.2s ease',
           }}
-        />
-        {logoError && (
-          <div className='fv-plugins-message-container'>
-            <span role='alert'>{logoError}</span>
-          </div>
-        )}
-      </div>
-
-      {/* Company Name */}
-      <div className='fv-row mb-5'>
-        <label className='form-label fs-6 fw-bolder'>Company Name</label>
-        <input
-          placeholder='Enter Company Name..'
-          {...formik.getFieldProps('companyName')}
-          className={clsx('form-control bg-transparent', {
-            'is-invalid': formik.touched.companyName && formik.errors.companyName,
-            'is-valid': formik.touched.companyName && !formik.errors.companyName,
-          })}
-          type='text'
-          autoComplete='off'
-        />
-        {formik.touched.companyName && formik.errors.companyName && (
-          <div className='fv-plugins-message-container'>
-            <span role='alert'>{formik.errors.companyName}</span>
-          </div>
-        )}
-      </div>
-
-      {/* Email */}
-      <div className='fv-row mb-5'>
-        <label className='form-label fs-6 fw-bolder'>Company Email</label>
-        <input
-          placeholder='Enter Company Email Address..'
-          {...formik.getFieldProps('email')}
-          className={clsx('form-control bg-transparent', {
-            'is-invalid': formik.touched.email && formik.errors.email,
-            'is-valid': formik.touched.email && !formik.errors.email,
-          })}
-          type='email'
-          autoComplete='off'
-        />
-        {formik.touched.email && formik.errors.email && (
-          <div className='fv-plugins-message-container'>
-            <span role='alert'>{formik.errors.email}</span>
-          </div>
-        )}
-      </div>
-
-      {/* Phone */}
-      <div className='fv-row mb-5'>
-        <label className='form-label fs-6 fw-bolder'>Company Phone</label>
-        <input
-          placeholder='Enter Company Phone Number..'
-          {...formik.getFieldProps('companyPhone')}
-          className={clsx('form-control bg-transparent', {
-            'is-invalid': formik.touched.companyPhone && formik.errors.companyPhone,
-            'is-valid': formik.touched.companyPhone && !formik.errors.companyPhone,
-          })}
-          type='text'
-          autoComplete='off'
-        />
-        {formik.touched.companyPhone && formik.errors.companyPhone && (
-          <div className='fv-plugins-message-container'>
-            <span role='alert'>{formik.errors.companyPhone}</span>
-          </div>
-        )}
-      </div>
-
-      {/* Website */}
-      <div className='fv-row mb-5'>
-        <label className='form-label fs-6 fw-bolder'>Company Website</label>
-        <input
-          placeholder='Enter Company website'
-          {...formik.getFieldProps('companyWebsite')}
-          className='form-control bg-transparent'
-          type='text'
-          autoComplete='off'
-        />
-      </div>
-
-      {/* Address */}
-      <div className='fv-row mb-5'>
-        <label className='form-label fs-6 fw-bolder'>Company Address</label>
-        <input
-          placeholder='Enter Company Address'
-          {...formik.getFieldProps('companyAddress')}
-          className={clsx('form-control bg-transparent', {
-            'is-invalid': formik.touched.companyAddress && formik.errors.companyAddress,
-            'is-valid': formik.touched.companyAddress && !formik.errors.companyAddress,
-          })}
-          type='text'
-          autoComplete='off'
-        />
-        {formik.touched.companyAddress && formik.errors.companyAddress && (
-          <div className='fv-plugins-message-container'>
-            <span role='alert'>{formik.errors.companyAddress}</span>
-          </div>
-        )}
-      </div>
-
-      {/* Receipt Number */}
-      <div className='fv-row mb-5'>
-        <label className='form-label fs-6 fw-bolder'>Receipt Number (example: ILS-100)</label>
-        <input
-          placeholder='Enter Receipt Number'
-          {...formik.getFieldProps('reciptNumber')}
-          className={clsx('form-control bg-transparent', {
-            'is-invalid': formik.touched.reciptNumber && formik.errors.reciptNumber,
-            'is-valid': formik.touched.reciptNumber && !formik.errors.reciptNumber,
-          })}
-          type='text'
-          autoComplete='off'
-        />
-        {formik.touched.reciptNumber && formik.errors.reciptNumber && (
-          <div className='fv-plugins-message-container'>
-            <span role='alert'>{formik.errors.reciptNumber}</span>
-          </div>
-        )}
-      </div>
-
-      {/* GST */}
-      <div className='fv-row mb-5'>
-        <label className='form-label fs-6 fw-bolder'>GST</label>
-        <input
-          placeholder='Enter GST'
-          {...formik.getFieldProps('gst')}
-          className='form-control bg-transparent'
-          type='text'
-          autoComplete='off'
-        />
-      </div>
-
-      {/* Is GST Based */}
-      <div className='fv-row mb-5'>
-        <label className='form-label fs-6 fw-bolder'>Is GST Based</label>
-        <select
-          {...formik.getFieldProps('isGstBased')}
-          className={clsx('form-select bg-transparent', {
-            'is-invalid': formik.touched.isGstBased && formik.errors.isGstBased,
-            'is-valid': formik.touched.isGstBased && !formik.errors.isGstBased,
-          })}
         >
-          <option value=''>--select--</option>
-          <option value='Yes'>Yes</option>
-          <option value='No'>No</option>
-        </select>
-        {formik.touched.isGstBased && formik.errors.isGstBased && (
-          <div className='fv-plugins-message-container'>
-            <span role='alert'>{formik.errors.isGstBased}</span>
+          <div
+            className='d-flex align-items-center justify-content-center flex-shrink-0'
+            style={{
+              width: 72,
+              height: 72,
+              borderRadius: 14,
+              background: logoPreview ? '#fff' : 'linear-gradient(135deg, #eef0ff, #f5ecff)',
+              overflow: 'hidden',
+              border: '1px solid #e4e6ef',
+            }}
+          >
+            {logoPreview ? (
+              <img
+                src={logoPreview}
+                alt='preview'
+                style={{width: '100%', height: '100%', objectFit: 'contain'}}
+              />
+            ) : (
+              <i className='bi bi-cloud-arrow-up-fill' style={{fontSize: 28, color: '#6a4cff'}}></i>
+            )}
+          </div>
+          <div className='flex-grow-1'>
+            <div className='fw-bold text-gray-800 mb-1'>
+              {logoFile ? logoFile.name : 'Click to upload company logo'}
+            </div>
+            <div className='text-gray-500 fs-7'>
+              PNG, JPG or SVG &mdash; recommended square format
+            </div>
+          </div>
+          <input
+            ref={fileInputRef}
+            type='file'
+            accept='image/*'
+            style={{display: 'none'}}
+            onChange={handleLogoChange}
+          />
+        </div>
+        {logoError && (
+          <div className='fv-plugins-message-container mt-2'>
+            <span role='alert' className='text-danger'>
+              {logoError}
+            </span>
           </div>
         )}
       </div>
 
-      {/* Password */}
-      <div className='fv-row mb-5'>
-        <label className='form-label fs-6 fw-bolder'>Password</label>
-        <input
-          placeholder='Enter password'
-          {...formik.getFieldProps('password')}
-          className={clsx('form-control bg-transparent', {
-            'is-invalid': formik.touched.password && formik.errors.password,
-            'is-valid': formik.touched.password && !formik.errors.password,
-          })}
-          type='password'
-          autoComplete='off'
-        />
-        {formik.touched.password && formik.errors.password && (
-          <div className='fv-plugins-message-container'>
-            <span role='alert'>{formik.errors.password}</span>
+      {/* Two-column grid */}
+      <div className='row g-4'>
+        {/* Company Name */}
+        <div className='col-md-6'>
+          <label className='form-label fs-6 fw-bold text-gray-800'>Company Name</label>
+          <div className='position-relative'>
+            <span style={iconWrapStyle}>
+              <i className='bi bi-building'></i>
+            </span>
+            <input
+              placeholder='Acme Corp'
+              {...formik.getFieldProps('companyName')}
+              className={clsx('form-control', {
+                'is-invalid': formik.touched.companyName && formik.errors.companyName,
+                'is-valid': formik.touched.companyName && !formik.errors.companyName,
+              })}
+              style={inputWithIconStyle}
+              type='text'
+              autoComplete='off'
+            />
           </div>
-        )}
-      </div>
+          {formik.touched.companyName && formik.errors.companyName && (
+            <div className='fv-plugins-message-container mt-1'>
+              <span role='alert' className='text-danger fs-7'>
+                {formik.errors.companyName}
+              </span>
+            </div>
+          )}
+        </div>
 
-      {/* Confirm Password */}
-      <div className='fv-row mb-8'>
-        <label className='form-label fs-6 fw-bolder'>Confirm Password</label>
-        <input
-          placeholder='Confirm password'
-          {...formik.getFieldProps('confirmPassword')}
-          className={clsx('form-control bg-transparent', {
-            'is-invalid': formik.touched.confirmPassword && formik.errors.confirmPassword,
-            'is-valid': formik.touched.confirmPassword && !formik.errors.confirmPassword,
-          })}
-          type='password'
-          autoComplete='off'
-        />
-        {formik.touched.confirmPassword && formik.errors.confirmPassword && (
-          <div className='fv-plugins-message-container'>
-            <span role='alert'>{formik.errors.confirmPassword}</span>
+        {/* Email */}
+        <div className='col-md-6'>
+          <label className='form-label fs-6 fw-bold text-gray-800'>Company Email</label>
+          <div className='position-relative'>
+            <span style={iconWrapStyle}>
+              <i className='bi bi-envelope-fill'></i>
+            </span>
+            <input
+              placeholder='hello@company.com'
+              {...formik.getFieldProps('email')}
+              className={clsx('form-control', {
+                'is-invalid': formik.touched.email && formik.errors.email,
+                'is-valid': formik.touched.email && !formik.errors.email,
+              })}
+              style={inputWithIconStyle}
+              type='email'
+              autoComplete='off'
+            />
           </div>
-        )}
+          {formik.touched.email && formik.errors.email && (
+            <div className='fv-plugins-message-container mt-1'>
+              <span role='alert' className='text-danger fs-7'>
+                {formik.errors.email}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Phone */}
+        <div className='col-md-6'>
+          <label className='form-label fs-6 fw-bold text-gray-800'>Company Phone</label>
+          <div className='position-relative'>
+            <span style={iconWrapStyle}>
+              <i className='bi bi-telephone-fill'></i>
+            </span>
+            <input
+              placeholder='+91 98765 43210'
+              {...formik.getFieldProps('companyPhone')}
+              className={clsx('form-control', {
+                'is-invalid': formik.touched.companyPhone && formik.errors.companyPhone,
+                'is-valid': formik.touched.companyPhone && !formik.errors.companyPhone,
+              })}
+              style={inputWithIconStyle}
+              type='text'
+              autoComplete='off'
+            />
+          </div>
+          {formik.touched.companyPhone && formik.errors.companyPhone && (
+            <div className='fv-plugins-message-container mt-1'>
+              <span role='alert' className='text-danger fs-7'>
+                {formik.errors.companyPhone}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Website */}
+        <div className='col-md-6'>
+          <label className='form-label fs-6 fw-bold text-gray-800'>Company Website</label>
+          <div className='position-relative'>
+            <span style={iconWrapStyle}>
+              <i className='bi bi-globe'></i>
+            </span>
+            <input
+              placeholder='https://company.com'
+              {...formik.getFieldProps('companyWebsite')}
+              className='form-control'
+              style={inputWithIconStyle}
+              type='text'
+              autoComplete='off'
+            />
+          </div>
+        </div>
+
+        {/* Address */}
+        <div className='col-12'>
+          <label className='form-label fs-6 fw-bold text-gray-800'>Company Address</label>
+          <div className='position-relative'>
+            <span style={iconWrapStyle}>
+              <i className='bi bi-geo-alt-fill'></i>
+            </span>
+            <input
+              placeholder='Street, City, State, ZIP'
+              {...formik.getFieldProps('companyAddress')}
+              className={clsx('form-control', {
+                'is-invalid': formik.touched.companyAddress && formik.errors.companyAddress,
+                'is-valid': formik.touched.companyAddress && !formik.errors.companyAddress,
+              })}
+              style={inputWithIconStyle}
+              type='text'
+              autoComplete='off'
+            />
+          </div>
+          {formik.touched.companyAddress && formik.errors.companyAddress && (
+            <div className='fv-plugins-message-container mt-1'>
+              <span role='alert' className='text-danger fs-7'>
+                {formik.errors.companyAddress}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Receipt Number */}
+        <div className='col-md-6'>
+          <label className='form-label fs-6 fw-bold text-gray-800'>Receipt Number</label>
+          <div className='position-relative'>
+            <span style={iconWrapStyle}>
+              <i className='bi bi-receipt'></i>
+            </span>
+            <input
+              placeholder='ILS-100'
+              {...formik.getFieldProps('reciptNumber')}
+              className={clsx('form-control', {
+                'is-invalid': formik.touched.reciptNumber && formik.errors.reciptNumber,
+                'is-valid': formik.touched.reciptNumber && !formik.errors.reciptNumber,
+              })}
+              style={inputWithIconStyle}
+              type='text'
+              autoComplete='off'
+            />
+          </div>
+          {formik.touched.reciptNumber && formik.errors.reciptNumber && (
+            <div className='fv-plugins-message-container mt-1'>
+              <span role='alert' className='text-danger fs-7'>
+                {formik.errors.reciptNumber}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Is GST Based */}
+        <div className='col-md-6'>
+          <label className='form-label fs-6 fw-bold text-gray-800'>Is GST Based?</label>
+          <select
+            {...formik.getFieldProps('isGstBased')}
+            className={clsx('form-select', {
+              'is-invalid': formik.touched.isGstBased && formik.errors.isGstBased,
+              'is-valid': formik.touched.isGstBased && !formik.errors.isGstBased,
+            })}
+            style={inputStyle}
+          >
+            <option value=''>-- select --</option>
+            <option value='Yes'>Yes</option>
+            <option value='No'>No</option>
+          </select>
+          {formik.touched.isGstBased && formik.errors.isGstBased && (
+            <div className='fv-plugins-message-container mt-1'>
+              <span role='alert' className='text-danger fs-7'>
+                {formik.errors.isGstBased}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* GST */}
+        <div className='col-12'>
+          <label className='form-label fs-6 fw-bold text-gray-800'>GST Number (optional)</label>
+          <div className='position-relative'>
+            <span style={iconWrapStyle}>
+              <i className='bi bi-file-earmark-text'></i>
+            </span>
+            <input
+              placeholder='Enter GST number'
+              {...formik.getFieldProps('gst')}
+              className='form-control'
+              style={inputWithIconStyle}
+              type='text'
+              autoComplete='off'
+            />
+          </div>
+        </div>
+
+        {/* Password */}
+        <div className='col-md-6'>
+          <label className='form-label fs-6 fw-bold text-gray-800'>Password</label>
+          <div className='position-relative'>
+            <span style={iconWrapStyle}>
+              <i className='bi bi-lock-fill'></i>
+            </span>
+            <input
+              placeholder='Minimum 6 characters'
+              {...formik.getFieldProps('password')}
+              className={clsx('form-control', {
+                'is-invalid': formik.touched.password && formik.errors.password,
+                'is-valid': formik.touched.password && !formik.errors.password,
+              })}
+              style={{...inputWithIconStyle, paddingRight: '2.75rem'}}
+              type={showPwd ? 'text' : 'password'}
+              autoComplete='off'
+            />
+            <button
+              type='button'
+              onClick={() => setShowPwd((v) => !v)}
+              style={{
+                position: 'absolute',
+                right: 12,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'transparent',
+                border: 'none',
+                color: '#8a92a6',
+                cursor: 'pointer',
+              }}
+            >
+              <i className={showPwd ? 'bi bi-eye-slash' : 'bi bi-eye'}></i>
+            </button>
+          </div>
+          {formik.touched.password && formik.errors.password && (
+            <div className='fv-plugins-message-container mt-1'>
+              <span role='alert' className='text-danger fs-7'>
+                {formik.errors.password}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Confirm Password */}
+        <div className='col-md-6'>
+          <label className='form-label fs-6 fw-bold text-gray-800'>Confirm Password</label>
+          <div className='position-relative'>
+            <span style={iconWrapStyle}>
+              <i className='bi bi-shield-lock-fill'></i>
+            </span>
+            <input
+              placeholder='Re-enter password'
+              {...formik.getFieldProps('confirmPassword')}
+              className={clsx('form-control', {
+                'is-invalid': formik.touched.confirmPassword && formik.errors.confirmPassword,
+                'is-valid': formik.touched.confirmPassword && !formik.errors.confirmPassword,
+              })}
+              style={{...inputWithIconStyle, paddingRight: '2.75rem'}}
+              type={showConfirmPwd ? 'text' : 'password'}
+              autoComplete='off'
+            />
+            <button
+              type='button'
+              onClick={() => setShowConfirmPwd((v) => !v)}
+              style={{
+                position: 'absolute',
+                right: 12,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'transparent',
+                border: 'none',
+                color: '#8a92a6',
+                cursor: 'pointer',
+              }}
+            >
+              <i className={showConfirmPwd ? 'bi bi-eye-slash' : 'bi bi-eye'}></i>
+            </button>
+          </div>
+          {formik.touched.confirmPassword && formik.errors.confirmPassword && (
+            <div className='fv-plugins-message-container mt-1'>
+              <span role='alert' className='text-danger fs-7'>
+                {formik.errors.confirmPassword}
+              </span>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Submit */}
-      <div className='d-grid mb-10'>
+      <div className='d-grid mt-8 mb-6'>
         <button
           type='submit'
           id='kt_company_register_submit'
-          className='btn btn-primary'
+          style={primaryBtnStyle}
           disabled={formik.isSubmitting || !formik.isValid}
         >
           {!loading && <span className='indicator-label'>Register Company</span>}
@@ -365,9 +560,9 @@ export function CompanyRegistration() {
         </button>
       </div>
 
-      <div className='text-gray-500 text-center fw-semibold fs-6'>
+      <div className='text-gray-600 text-center fw-semibold fs-6'>
         Already have an account?{' '}
-        <Link to='/auth/login' className='link-primary'>
+        <Link to='/auth/login' style={{color: '#6a4cff', fontWeight: 700}}>
           Sign In
         </Link>
       </div>
